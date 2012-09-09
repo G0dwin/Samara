@@ -1,0 +1,131 @@
+<?php
+
+Samara_Include('Database', 'inc');
+
+class UpdateManager
+{
+	protected static $instance;
+	
+	protected function __construct()
+	{
+		
+	}
+	
+	public static function __callStatic($name, $args)
+	{
+		return call_user_func_array(array(UpdateManager::getInstance(), $name), $args);
+	}
+	
+	protected static function getInstance()
+	{
+		return UpdateManager::$instance ?: (UpdateManager::$instance = new UpdateManager());
+	}
+	
+	protected function GetDomainDir()
+	{
+		return 'composition/domain';
+	}
+
+	protected function GetTableList()
+	{
+		$tables = array();
+		$table_data = Database::ExecuteQuery($this->FormatTableListQuery());
+		foreach ($table_data AS $table)
+		{
+			$tables[] = $table[0];
+		}
+		return $tables;
+	}
+	
+	protected function GetDomainObjectList()
+	{
+		$files = glob(SAMARA_ROOT.$this->GetDomainDir().'/*.sphp');
+		$classes = array();
+		foreach ($files as $file)
+		{
+			$classes[] = preg_replace('/^(.*[\/|\\\\])?([^\/|^\\\\]*)\.sphp$/', '$2', $file);
+		}
+		return $classes;
+	}
+	
+	protected function CreateUpdateScript()
+	{
+		$tables = $this->GetTableList();
+		$classes = $this->GetDomainObjectList();
+		$sql = array();
+		//throw new \Exception(var_export($classes, TRUE));
+		foreach ($classes as $class)
+		{
+			Samara_Include($class, $this->GetDomainDir());
+			$class = Samara_GetFullClassName($class);
+			$object = new $class();
+			$table_name = $object->NativeName();
+			$properties = $object->GetProperties();
+			if (array_search($table_name, $tables) === FALSE)
+			{
+				$columns = array();
+				foreach ($properties AS $property)
+				{
+					$columns[] = $property->CompileForCreate();
+				}
+				$sql[] = Database::CompleteQuery('CREATE TABLE '.Database::FormatTable($table_name).' ('.implode(', ', $columns).')');
+			}
+			else
+			{
+				$new_column_list = array();
+				$columns = $this->GetTableInfo($table_name);
+				$mods = array();
+				foreach ($properties AS $property)
+				{
+					$column_name = $property->GetNativeName();
+					if (!isset($columns[$column_name]))
+					{
+						$mods[] = 'ADD COLUMN '.$property->CompileForCreate();
+					}
+					else if ($property->IsOutdated($columns[$column_name]))
+					{
+						$mods[] = 'MODIFY COLUMN '.$property->CompileForCreate();
+					}
+					$new_column_list[] = $column_name;
+				}
+				$drop = array_diff(array_keys($columns), $new_column_list);
+				if ($drop)
+				{
+					foreach ($drop as $column)
+					{
+						//throw new \Exception(var_export($column, TRUE));
+						$mods[] = 'DROP COLUMN '.Database::FormatColumn($column);
+					}
+				}
+				if ($mods)
+				{
+					$sql[] = Database::CompleteQuery('ALTER TABLE '.Database::FormatTable($table_name).' '.implode(', ', $mods));
+				}
+			}
+		}
+		return $sql ? implode("\n", $sql) : FALSE;
+	}
+	
+	protected function FormatDescribeTable($table_name)
+	{
+		return Database::CompleteQuery('DESCRIBE '.Database::FormatTable($table_name));
+	}
+	
+	protected function FormatTableListQuery()
+	{
+		return Database::CompleteQuery('SHOW TABLES');
+	}
+	
+	protected function GetTableInfo($table_name)
+	{
+		$columns = array();
+		$table_data = Database::ExecuteQuery($this->FormatDescribeTable($table_name));
+		foreach ($table_data AS $column)
+		{
+			$columns[$column['Field']] = $column;
+		}
+		return $columns;
+	}
+	
+}
+

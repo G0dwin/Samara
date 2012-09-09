@@ -1,0 +1,186 @@
+<?php
+
+class Database
+{
+	protected static $instance;
+	protected static $aggreate_functions;
+	protected static $operators;
+	protected static $compare_operators;
+	protected static $logical_operators;
+	
+	protected function __construct()
+	{
+		
+	}
+	
+	public static function DB()
+	{
+		return Database::$instance ?: (Database::$instance = new Database());
+	}
+	
+	public static function __callStatic($name, $args)
+	{
+		return call_user_func_array(array(Database::DB(), $name), $args);
+	}
+	
+	protected function ExecuteQuery($query)
+	{
+		throw new \Exception('ExecuteQuery has not yet been implemented');
+	}
+	
+	protected function FormatNull()
+	{
+		return 'NULL';
+	}
+	
+	protected function FormatInteger($value)
+	{
+		return $value === null ? $this->FormatNull() : $value;
+	}
+	
+	protected function FormatString($value)
+	{
+		return $value === null ? $this->FormatNull() : "'$value'";
+	}
+
+	protected function FormatAll()
+	{
+		return '*';
+	}
+	
+	protected function FormatTable($value, $alias = NULL)
+	{
+		return "`$value`".($alias ? $this->FormatAlias($alias) : '');
+	}
+	
+	protected function FormatColumn($value, $alias = NULL)
+	{
+		return $this->FormatTable($value).($alias ? $this->FormatAlias($alias) : '');
+	}
+	
+	protected function FormatSetExpression($column, $value)
+	{
+		return $this->FormatTable($column).' = '.$value;
+	}
+	
+	protected function FormatAlias($alias)
+	{
+		return ' AS '.$this->FormatTable(Samara_ToUnderscoreCase($alias));
+	}
+	
+	protected function TableColumn($table, $column)
+	{
+		return "$table.$column";
+	}
+
+	protected function CompleteQuery($query)
+	{
+		return $query.';';
+	}
+	
+	protected function GetAggreateFunctions()
+	{
+		if (!Database::$aggreate_functions)
+		{
+			Database::$aggreate_functions = array(
+					'Max' => 'MAX(%s)',
+					'Min' => 'MIN(%s)',
+					'Average' => 'AVG(%s)',
+					'Sum' => 'SUM(%s)',
+					'Count' => 'COUNT(%s)'
+			);
+		}
+		return Database::$aggreate_functions;
+	}
+	
+	protected function GetOperators()
+	{
+		if (!Database::$operators)
+		{
+			Database::$operators = array(
+				'Plus' => '%s + %s',
+				'Minus' => '%s - %s',
+				'Times' => '%s * %s',
+				'DividedBy' => '%s / %s',
+				'BitwiseAnd' => '%s & %s',
+				'BitwiseOr' => '%s | %s',
+				'BitwiseXOr' => '%s ^ %s',
+				'InvertBits' => '~%s',
+				'Mod' => '%s %% %s',
+				'InvertBits' => '~%s',
+				'Negate' => '-%s'
+			);
+		}
+		return Database::$operators;
+	}
+	
+	protected function GetComparisonOperators()
+	{
+		if (!Database::$compare_operators)
+		{
+			Database::$compare_operators = array(
+				'Equals' => '%s = %s',
+				'LessThan' => '%s < %s',
+				'GreaterThan' => '%s > %s',
+				'LessThanOrEquals' => '%s <= %s',
+				'GreaterThanOrEquals' => '%s >= %s',
+				'DoesNotEqual' => '%s <> %s',
+				'IsNull' => '%s IS NULL',
+				'IsNotNull' => '%s IS NOT NULL',
+				'IsBetween' => '%s BETWEEN %s AND %s',
+				'Coalesce' => 'COALESCE(%l)',
+				'IsIn' => 'IN(%l)'
+			);
+		}
+		return Database::$compare_operators;
+	}
+	
+	protected function GetLogicalOperators()
+	{
+		if (!Database::$logical_operators)
+		{
+			Database::$logical_operators = array(
+				'And' => '%s AND %s',
+				'Or' => '%s OR %s'
+			);
+		}
+		return Database::$logical_operators;
+	}
+	
+	/*protected function FormatFunction($name, $args)
+	{
+		return "$name(".implode(', ', $args).')';
+	}*/
+	
+	protected function Format($op, $args)
+	{
+		if (preg_match('/(^|[^%])%l/', $op))
+		{
+			return str_replace('%l', $this->FormatList($args), $op);
+		}
+		return call_user_func_array('sprintf', array_merge(array($op), $args));
+	}
+	
+	protected function FormatList($array)
+	{
+		return implode(', ', $array);
+	}
+	
+	protected function AddBrackets($expression)
+	{
+		return "($expression)";
+	}
+	
+	protected function FormatAndExpression($arg1, $arg2)
+	{
+		return "$arg1 AND $arg2";
+	}
+	
+	protected function FormatOrExpression($arg1, $arg2)
+	{
+		return "$arg1 OR $arg2";
+	}
+	
+}
+
+Samara_Include('Join', 'inc/queries');

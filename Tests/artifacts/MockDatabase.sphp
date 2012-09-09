@@ -1,0 +1,29 @@
+<?php
+
+class Database
+{
+	protected $next_query_result;
+	protected $queries;
+
+	protected function ExecuteQuery($query)
+	{
+		if (!$this->queries)
+		{
+			$this->queries = array();
+		}
+		$this->queries[] = $query;
+		//throw new \Exception(var_export(array_shift($this->next_query_result), TRUE));
+		return array_shift($this->next_query_result);
+	}
+	
+	protected function SetExpectedQueryResults($results)
+	{
+		$this->next_query_result = $results;
+	}
+	
+	protected function GetQueriesCalled()
+	{
+		return $this->queries;
+	}
+	
+}

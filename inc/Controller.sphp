@@ -1,0 +1,94 @@
+<?php
+
+Samara_Include('Theme', 'inc');
+
+class Controller
+{
+
+	protected static $current_instance;
+	protected static $params;
+	
+	protected function __construct()
+	{
+		
+	}
+	
+	public function call($name, $args)
+	{
+		if (preg_match('/^render(.+)$/', $name, $matches))
+		{
+			return Theme::GetView($matches[1]);
+		}
+	}
+	
+	public static function __callStatic($name, $args)
+	{
+		return call_user_func_array(array(Controller::GetInstance(), $name), $args);
+	}
+	
+	protected static function GetInstance()
+	{
+		return Controller::$current_instance ?: (Controller::$current_instance = new Controller());
+	}
+	
+	protected function Render()
+	{
+		Controller::$params = $this->getParams();
+		$controller = $this->GetControllerName();
+		$class = "$controller.Controller";
+		if ($controller && Samara_ClassExists($class, 'inc/composition/controllers'))
+		{
+			Controller::$current_instance = new $class();
+		}
+		print Controller::$current_instance->CreatePage();
+	}
+	
+	public function CreatePage()
+	{
+		$page = $this->GetPageName();
+		$method = "render$page";
+		return Theme::Process($this->$method());
+	}
+	
+	public function renderIndex()
+	{
+		return Theme::getView();
+	}
+	
+	protected function GetControllerName()
+	{
+		return $this->Param('controller');
+	}
+	
+	protected function GetPageName()
+	{
+		return $this->Param('page') ?: 'Index';
+	}
+	
+	protected function Param($name)
+	{
+		return isset(Controller::$params[$name]) ? Controller::$params[$name] : null;
+	}
+	
+	protected function getParams()
+	{
+		$request = preg_split('/[\/|\?]/', trim($_SERVER['REQUEST_URI'], '/'));
+		$params = array('controller' => array_shift($request), 'page' => array_shift($request));
+		$params['params'] = array();
+		foreach ($request as $param)
+		{
+			$p = explode('=', $param);
+			if (count($p) > 1)
+			{
+				$params[$p[0]] = $p[1];
+			}
+			else
+			{
+				$params['params'][] = $param;
+			}
+		}
+		$params = array_merge($params, $_GET, $_POST);
+		return $params;
+	}
+}
+

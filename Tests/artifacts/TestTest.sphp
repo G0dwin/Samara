@@ -1,0 +1,16 @@
+<?php
+
+Samara_Include('Test', 'Tests/artifacts');
+
+class TestTest extends Test
+{
+	public function Calculate($x, $y)
+	{
+		return 10 * parent::Calculate($x, $y);
+	}
+	
+	public function ToString()
+	{
+		return 'TESTTEST A';
+	}
+}

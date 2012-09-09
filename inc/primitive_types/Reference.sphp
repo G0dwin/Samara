@@ -1,0 +1,34 @@
+<?php
+
+Samara_Include('Integer', 'inc/primitive_types');
+
+class Reference extends Integer {
+	
+	protected $type;
+	protected $cached_value;
+	
+	public function __construct($type, $name = NULL, $value = NULL)
+	{
+		parent::__construct($name ?: $type, $value);
+	}
+	
+	public function GetNativeName()
+	{
+		return parent::GetNativeName().'_id';
+	}
+	
+	public function GetValue()
+	{
+		if ($this->cached_value === null)
+		{
+			// TODO: Lookup value in Database
+		}
+		return $this->cached_value;
+	}
+	
+	public function IsUnsigned()
+	{
+		return true;
+	}
+	
+}

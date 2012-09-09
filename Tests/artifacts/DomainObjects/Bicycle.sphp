@@ -1,0 +1,18 @@
+<?php
+
+Samara_Include('DomainObject', 'inc');
+Samara_Include('Integer', 'inc/primitive_types');
+Samara_Include('String', 'inc/primitive_types');
+Samara_Include('Reference', 'inc/primitive_types');
+
+class Bicycle extends DomainObject
+{
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new Integer('Price'));
+		$this->AddProperty(new String('Name'));
+		$this->AddProperty(new Reference('User'));
+	}
+	
+}

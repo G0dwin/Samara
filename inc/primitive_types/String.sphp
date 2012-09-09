@@ -1,0 +1,27 @@
+<?php
+
+Samara_Include('DataObject', 'inc');
+
+class String extends DataObject {
+	
+	public function __construct($name = NULL, $value = NULL)
+	{
+		parent::__construct($name, $value);
+	}
+	
+	public function GetNativeType()
+	{
+		return 'VARCHAR';
+	}
+	
+	public function FormatNonNullValue($value)
+	{
+		return "'{$value}'";
+	}
+	
+	public function GetSize()
+	{
+		return null; 
+	}
+	
+}

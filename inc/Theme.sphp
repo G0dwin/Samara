@@ -1,0 +1,114 @@
+<?php
+
+class Theme
+{
+
+	protected static $instance;
+	protected $last_view;
+	
+	protected function __construct()
+	{
+		
+	}
+	
+	public static function __callStatic($name, $args)
+	{
+		return call_user_func_array(array(Theme::GetInstance(), $name), $args);
+	}
+	
+	protected static function GetInstance()
+	{
+		global $samara_theme;
+		$theme = $samara_theme.'Theme';
+		Samara_Include($theme, 'themes/'.Samara_ToUnderscoreCase($samara_theme));
+		return Theme::$instance ?: (Theme::$instance = new $theme());
+	}
+	
+	protected function GetView($view = NULL, $controller = NULL)
+	{
+		if ($view === NULL)
+		{
+			$view = Controller::GetPageName();
+		}
+		$view = Samara_ToUnderscoreCase($view);
+		if ($controller === NULL)
+		{
+			$controller = Controller::GetControllerName();
+		}
+		$filename = $this->getFile(($controller ? $controller.'/' : '').$view.'.view', SAMARA_ROOT.'/composition/views');
+		if (!file_exists($filename))
+		{
+			return $this->Get404View();
+		}
+		$xml = $this->GetXmlContents($filename);
+		return new SimpleXMLElement($xml);
+	}
+	
+	protected function Get404View()
+	{
+		return $this->GetView('404', '');
+	}
+	
+	protected function GetThemeName()
+	{
+		return preg_replace('/^\_*(.*)Theme$/', '$1', get_class(Theme::$instance));
+	}
+	
+	function GetXmlContents($filename)
+	{
+		if (is_file($filename))
+		{
+			ob_start();
+			include $filename;
+			return '<?xml version="1.0" encoding="ISO-8859-1"?>'.ob_get_clean();
+		}
+		return false;
+	}
+	
+	protected function RenderLayout($layout)
+	{
+		print $this->Process($this->last_view, $layout);
+	}
+	
+	protected function Process($xml, $layout = NULL)
+	{
+		$this->last_view = $xml;
+		$xslt = new XSLTProcessor();
+		$filename = $this->getFile(($layout === NULL ? 'default' : $layout).'.layout');
+		$xsl = $this->GetXmlContents($filename);
+		$xslt->importStylesheet(new SimpleXMLElement($xsl));
+		return $xslt->transformToXml($xml);
+	}
+	
+	protected function getFile($name, $default = NULL)
+	{
+		$filename = NULL;
+		$dirs = $this->getDirs();
+		while ($dirs)
+		{
+			$filename = array_shift($dirs).'/'.$name;
+			if (file_exists($filename))
+			{
+				return $filename;
+			}
+		}
+		return $default ? $default.'/'.$name : null;
+	}
+	
+	protected function getDirs()
+	{
+		$dirs = array();
+		$class = get_called_class();
+		while ($class != FALSE)
+		{
+			$dir = SAMARA_ROOT.'themes/'.$this->GetThemeName();
+			if (!array_search($dir, $dirs))
+			{
+				$dirs[] = $dir;
+			}
+			$class = get_parent_class($class);
+		}
+		return $dirs;
+	}
+	
+}

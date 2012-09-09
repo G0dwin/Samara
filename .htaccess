@@ -1,0 +1,25 @@
+Options +FollowSymLinks
+Options -Indexes
+ErrorDocument 404 /index.php
+
+# Set the default handler.
+DirectoryIndex index.php index.html index.htm
+
+<FilesMatch "\.(s?php|x[m|s]l)$">
+  Order allow,deny
+</FilesMatch>
+
+<FilesMatch "^index\.php$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !=/favicon.ico
+RewriteRule ^ index.php [L]
+
+<FilesMatch "\.s?php$">
+	Header unset Cache-Control
+</FilesMatch>

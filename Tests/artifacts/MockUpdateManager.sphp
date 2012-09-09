@@ -1,0 +1,12 @@
+<?php
+
+class UpdateManager
+{
+	
+	protected function GetDomainDir()
+	{
+		return 'Tests/artifacts/DomainObjects';
+	}
+
+}
+
