@@ -17,7 +17,7 @@ function Samara_GetFile($filename)
 function Samara_Reclass($contents, $old_class, $new_class, $parent, $is_first)
 {
 	$result = $contents;
-	$result = preg_replace('/(abstract\s*)?(class\s*)'.$old_class.'(\s*extends\s*[^\s]*)?(\s*implements\s*[^\{]*)?(\s*\{)/', "\n\n".($is_first ? '$1' : 'abstract ').'$2'.$new_class.($parent ? ' extends '.$parent : '$3').'$4$5', $result);
+	$result = preg_replace('/(abstract\s*)?(class\s*)'.$old_class.'(\s*extends\s*[^\s]*)?(\s*implements\s*[^\{]*)?(\s*\{)/', "\r\n\r\n".($is_first ? '$1' : 'abstract ').'$2'.$new_class.($parent ? ' extends '.$parent : '$3').'$4$5', $result);
 	//$result = preg_replace('/^(\s*)(Samara_Include\(.*?\);)+(.*$)/', '$1$3$2', $result);
 		
 	return $result;

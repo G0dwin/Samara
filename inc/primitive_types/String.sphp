@@ -4,8 +4,11 @@ Samara_Include('DataObject', 'inc');
 
 class String extends DataObject {
 	
-	public function __construct($name = NULL, $value = NULL)
+	protected $size;
+	
+	public function __construct($name = NULL, $size = NULL, $value = NULL)
 	{
+		$this->size = $size;
 		parent::__construct($name, $value);
 	}
 	
@@ -21,7 +24,12 @@ class String extends DataObject {
 	
 	public function GetSize()
 	{
-		return null; 
+		return $this->size;
+	}
+	
+	public function GetDefaultValue()
+	{
+		return $this->IsNullable() ? null : '';
 	}
 	
 }

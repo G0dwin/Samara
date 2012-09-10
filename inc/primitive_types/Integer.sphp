@@ -42,5 +42,10 @@ class Integer extends DataObject {
 	{
 		return false;
 	}
+
+	public function GetDefaultValue()
+	{
+		return $this->IsNullable() ? null : 0;
+	}
 	
 }

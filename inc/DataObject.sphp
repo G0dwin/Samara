@@ -197,7 +197,7 @@ abstract class DataObject {
 		return (strcasecmp(str_replace(', ', ',', $column_info['Type']), str_replace(', ', ',', $this->GetFullTypeName())) !== 0) ||
 				(($column_info['Null'] !== 'NO') !== $this->IsNullable()) ||
 				(strcasecmp($column_info['Key'], $this->IsPrimaryKey() ? 'PRI' : ($this->IsUnique() ? 'UNI' : ''))) ||
-				($column_info['Default'] !== $this->GetDefaultValue()) ||
+				($this->CanHaveDefaultValue() && $column_info['Default'] !== $this->GetDefaultValue()) ||
 				strcasecmp($column_info['Extra'], $this->GetExtra()) !== 0;
 	}
 	

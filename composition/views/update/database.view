@@ -1,0 +1,5 @@
+<page title="update database">
+	<paragraph>
+		<param name="message" />
+	</paragraph>
+</page>

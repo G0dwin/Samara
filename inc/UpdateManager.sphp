@@ -32,7 +32,8 @@ class UpdateManager
 		$table_data = Database::ExecuteQuery($this->FormatTableListQuery());
 		foreach ($table_data AS $table)
 		{
-			$tables[] = $table[0];
+			$key = array_keys($table);
+			$tables[] = $table[$key[0]];
 		}
 		return $tables;
 	}
@@ -53,7 +54,7 @@ class UpdateManager
 		$tables = $this->GetTableList();
 		$classes = $this->GetDomainObjectList();
 		$sql = array();
-		//throw new \Exception(var_export($classes, TRUE));
+
 		foreach ($classes as $class)
 		{
 			Samara_Include($class, $this->GetDomainDir());
@@ -68,7 +69,7 @@ class UpdateManager
 				{
 					$columns[] = $property->CompileForCreate();
 				}
-				$sql[] = Database::CompleteQuery('CREATE TABLE '.Database::FormatTable($table_name).' ('.implode(', ', $columns).')');
+				$sql[] = Database::CompleteQuery('CREATE TABLE '.Database::FormatTable($table_name).' ('.implode(', ', $columns).") COLLATE='utf8_general_ci' ENGINE=InnoDB");
 			}
 			else
 			{

@@ -1,0 +1,8 @@
+<?php
+
+Samara_Include('Controller', 'inc');
+
+class UserController extends Controller
+{
+
+}

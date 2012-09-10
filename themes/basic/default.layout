@@ -1,12 +1,37 @@
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:template match="view">
+		<xsl:text disable-output-escaping="yes">&lt;!doctype html>&#10;</xsl:text>
+		
+		<html lang="en">
+			<head>
+				<meta charset="utf-8" />
+				<title><xsl:value-of select="//page/@title" /></title>
+				<meta name="description"><xsl:attribute name="content"><xsl:value-of select="page/@title" /></xsl:attribute></meta>
+				<meta name="author" content="Godwin!" />
 
-	<xsl:template match="page">
-		<html>
+				<xsl:for-each select="css-file">
+					<link rel="stylesheet" type="text/css"><xsl:attribute name="href"><xsl:apply-templates /></xsl:attribute></link>
+				</xsl:for-each>
+				
+				<xsl:text disable-output-escaping="yes">
+					&lt;!--[if lt IE 9]&gt;
+						&lt;script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"&gt;&lt;/script&gt;
+					&lt;![endif]--&gt;
+				</xsl:text>
+			</head>
 			<body>
-				<h2><xsl:value-of select="@title" /></h2>
 				<xsl:apply-templates />
 			</body>
 		</html>
+	</xsl:template>
+	
+	<xsl:template match="css-file">
+	</xsl:template>
+
+	<xsl:template match="page">
+		<div id="content">
+			<h2><xsl:value-of select="@title" /></h2>
+			<xsl:apply-templates />
+		</div>
 	</xsl:template>
 
 	<xsl:template match="paragraph[@black]">
@@ -27,4 +52,62 @@
 		</p>
 	</xsl:template>
 	
-</xsl:stylesheet>
+	<xsl:template match="p.*">
+		<xsl:value-of select="fn:ceiling(1.1)" />
+	</xsl:template>
+	
+	<xsl:template match="param">
+		<xsl:processing-instruction name="php">
+			echo $<xsl:value-of select="@name" />;
+		?</xsl:processing-instruction>
+	</xsl:template>
+
+	<xsl:template match="view-header">
+		<header>
+			<div class="header-content">
+				<xsl:apply-templates />
+			</div>
+		</header>
+	</xsl:template>
+
+	<xsl:template match="view-footer">
+		<footer>
+			<xsl:apply-templates />
+		</footer>
+	</xsl:template>
+	
+	<xsl:template match="title">
+		<h1><xsl:apply-templates /></h1>
+	</xsl:template>
+	
+	<xsl:template match="menu">
+		<nav>
+			<xsl:attribute name="class">
+    			<xsl:value-of select="@name"/>
+  			</xsl:attribute>
+			<xsl:apply-templates />
+		</nav>
+	</xsl:template>
+
+	<xsl:template match="body">
+		<div id="body-wrapper">
+			<div id="body">
+				<xsl:apply-templates />
+			</div>
+		</div>
+	</xsl:template>
+
+	<xsl:template match="sidebar">
+		<div class="sidebar">
+			<xsl:attribute name="id">
+    			<xsl:value-of select="@position"/>
+  			</xsl:attribute>
+			<xsl:apply-templates />
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="logo">
+		<div class="logo">
+			<img src="<?php echo Theme::GetLogo(); ?>" />
+  		</div>
+	</xsl:template>

@@ -1,5 +1,8 @@
 <?php
 
+Samara_Include('Vars', 'inc');
+Samara_Include('UpdateManager', 'inc');
+
 class Database
 {
 	protected static $instance;
@@ -7,6 +10,8 @@ class Database
 	protected static $operators;
 	protected static $compare_operators;
 	protected static $logical_operators;
+	protected $conection;
+	protected $last_error;
 	
 	protected function __construct()
 	{
@@ -18,14 +23,73 @@ class Database
 		return Database::$instance ?: (Database::$instance = new Database());
 	}
 	
+	protected function getConnection()
+	{
+		$saved_connector = $this->conection;
+		if (!$saved_connector)
+		{
+			global $samara_db_info;
+			$saved_connector = $this->conection = new mysqli(
+											$samara_db_info['host'],
+											$samara_db_info['username'],
+											$samara_db_info['passwd'],
+											$samara_db_info['dbname'],
+											$samara_db_info['port'],
+											$samara_db_info['socket']
+					);
+			if (mysqli_connect_errno())
+			{
+				return mysqli_connect_error();
+			}
+		}
+		return $saved_connector;
+	}
+	
+	protected function DBInfo()
+	{
+		return var_export(UpdateManager::CreateUpdateScript(), TRUE);//var_export(Update, TRUE);
+	}
+	
 	public static function __callStatic($name, $args)
 	{
-		return call_user_func_array(array(Database::DB(), $name), $args);
+		$instance = Database::DB();
+		$exists = method_exists($instance, $name);
+		$class = get_class($instance);
+		if ($exists && $name[0] >= 'A' && $name[0] <= 'Z')
+		{
+			return call_user_func_array(array($instance, $name), $args);
+		}
+		if ($exists)
+		{
+			throw new \Exception("The method $class::$name is not public");
+		}
+		throw new \Exception("The method $class::$name does not exist");
 	}
 	
 	protected function ExecuteQuery($query)
 	{
-		throw new \Exception('ExecuteQuery has not yet been implemented');
+		$connection = $this->getConnection();
+		$rows = $connection->query($query);
+		if ($rows === FALSE)
+		{
+			$this->last_error = $connection->error;
+			return FALSE;
+		}
+		if (is_object($rows))
+		{
+			$result = array();
+			while (($row = $rows->fetch_assoc()) !== NULL)
+			{
+				$result[] = $row;
+			}
+			return $result;
+		}
+		return $rows;
+	}
+	
+	protected function GetLastError()
+	{
+		return $this->last_error;
 	}
 	
 	protected function FormatNull()

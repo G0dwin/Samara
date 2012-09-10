@@ -1,0 +1,33 @@
+<?php
+
+Samara_Include('Controller', 'inc');
+Samara_Include('UpdateManager', 'inc');
+
+class UpdateController extends Controller
+{
+	
+	public function renderDatabase()
+	{
+		$script = UpdateManager::CreateUpdateScript();
+		if ($script !== FALSE)
+		{
+			if (Database::ExecuteQuery($script) === FALSE)
+			{
+				$message = 'Error updating database: '.Database::GetLastError()."<p>$script</p>";
+			}
+			else
+			{
+				$message = 'Successfully updated database';
+			}
+		}
+		else
+		{
+			$message = 'Database is currently up to date';
+		}
+		//return '<paragraph>hi!</paragraph>';
+		return Theme::getView(array('message' => $message));//array('param1' => 'TESTA', 'param2' => 'TESTBB'));
+	}
+
+}
+
+?>

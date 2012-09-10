@@ -1,0 +1,16 @@
+<?php
+
+Samara_Include('String', 'inc/primitive_types');
+Samara_Include('DomainObject', 'inc');
+
+class User extends DomainObject
+{
+	//protected DataObject username;
+	
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new String('Name', 32));
+	}
+	
+}

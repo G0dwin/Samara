@@ -1,0 +1,31 @@
+<view>
+
+	<?php echo Theme::RenderComponent('css-files'); ?>
+	<css-file>http://fonts.googleapis.com/css?family=Codystar</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Londrina+Sketch</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Fredericka+the+Great</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Cabin+Sketch:700</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Miltonian</css-file>
+
+	<view-header>
+		<logo /><title>Samara</title><menu name="main" />
+	</view-header>
+
+	<body>
+	
+		<sidebar position="left">
+		</sidebar>
+	
+		<?php echo Theme::RenderComponent('page'); ?>
+	
+		<sidebar position="right">
+		</sidebar>
+	
+	</body>
+	
+	<view-footer>
+	</view-footer>
+	
+</view>
+
+<?php echo Theme::RenderComponent('components'); ?>

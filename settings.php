@@ -8,5 +8,14 @@ define('SAMARA_ROOT', "C:\\Users\\Godwin\\My Sites\\Samara\\");
 
 $samara_modules = array();
 $samara_namespace = null;
-$samara_include_method = SAMARA_TEST;
+$samara_include_method = SAMARA_DEV;
 $samara_theme = 'Basic';
+$samara_db_info = array
+					(
+						'host' => 'localhost',
+						'username' => 'samara',
+						'passwd' => 'samara',
+						'dbname' => 'samara',
+						'port' => 3306,
+						'socket' => NULL
+					);
