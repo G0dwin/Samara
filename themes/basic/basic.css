@@ -5,6 +5,9 @@ body {
 	padding: 0;
     margin: 0;
     min-height: 100%;
+	font-size: 13px;
+	font-family: 'Karla', sans-serif;
+	font-family: 'Open Sans', sans-serif;
 }
 
 body > header {
@@ -25,12 +28,13 @@ body > footer {
 #body {
 	max-width: 1200px;
 	margin: 0px auto;
+	background-color: white;
 }
 
 #content {
-	background-color: #FFF;
 	margin: 0;
-	padding: 8px;
+	padding: 8px 32px 32px 32px;
+	overflow-y: auto;
 }
 
 #body-wrapper {
@@ -48,17 +52,50 @@ h1 {
     display: inline-block;
     color: #EFEFEF;
     margin-top: 14px;
+	margin-left: 84px;
 	font-weight: normal;
-	font-size: 2.5em;
+	font-size: 38px;
 	font-family: 'Codystar', cursive;
-	/*font-family: 'Londrina Sketch', cursive;
-	font-family: 'Fredericka the Great', cursive;
-	font-family: 'Cabin Sketch', cursive;
-	font-family: 'Miltonian', cursive;*/
 }
 
 header .logo {
     display: inline-block;
     float: left;
     margin-right: 16px;
+	position: absolute;
+}
+
+#content h2 {
+	background-color: #EEE;
+	padding: 0px 8px;
+	margin: 8px 0px;
+}
+
+#sidebar-right {
+	float: right;
+	width: 200px;
+	background-color: #EFEFEF;
+	margin: 16px 32px 16px 0px;
+	padding: 8px;
+}
+
+p {
+	margin-left: 16px;
+}
+
+p:first-letter {
+	font-family: 'Kranky', cursive;
+	font-family: 'Rye', cursive;
+	font-size: 2.6em;
+	float: left;
+	line-height: 32px;
+	margin-left: 0px;
+	letter-spacing: 0px;
+	margin-left: -8px;
+	margin-top: 2px;
+	height: 16px;
+	color: #444;
+	/*border: 1px dotted #AAA;*/
+	/*background-color: #F8F8F8;*/
+	text-shadow: 2px 2px 1px #CCC;
 }

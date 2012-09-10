@@ -2,9 +2,9 @@
 
 	<?php echo Theme::RenderComponent('css-files'); ?>
 	<css-file>http://fonts.googleapis.com/css?family=Codystar</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Londrina+Sketch</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Fredericka+the+Great</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Cabin+Sketch:700</css-file>
+
+	<css-file>http://fonts.googleapis.com/css?family=Kranky</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Rye</css-file>
 	<css-file>http://fonts.googleapis.com/css?family=Miltonian</css-file>
 
 	<view-header>
@@ -16,10 +16,11 @@
 		<sidebar position="left">
 		</sidebar>
 	
-		<?php echo Theme::RenderComponent('page'); ?>
-	
 		<sidebar position="right">
+			This is the sidebar
 		</sidebar>
+
+		<?php echo Theme::RenderComponent('page'); ?>
 	
 	</body>
 	
