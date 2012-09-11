@@ -1,5 +1,5 @@
 <page title="update database">
-	<paragraph>
-		<param name="message" />
-	</paragraph>
+	<text type="paragraph">
+		<?php echo $message; ?>
+	</text>
 </page>

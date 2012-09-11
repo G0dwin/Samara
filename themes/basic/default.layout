@@ -19,25 +19,25 @@
 				</xsl:text>
 			</head>
 			<body>
-				<xsl:apply-templates />
+				<xsl:apply-templates select="view-header" />
+				<xsl:apply-templates select="view-body" />
+				<xsl:apply-templates select="view-footer" />
 			</body>
 		</html>
 	</xsl:template>
 	
-	<xsl:template match="css-file">
-	</xsl:template>
-
 	<xsl:template match="page">
 		<div id="content">
 			<h2><xsl:value-of select="@title" /></h2>
 			<xsl:apply-templates />
+			<footer></footer>
 		</div>
 	</xsl:template>
 
 	<xsl:template match="text[@type='paragraph']">
-		<p>
+		<p class="paragraph first-paragraph">
 		<xsl:processing-instruction name="php">
-			echo preg_replace('/\n\s*\n/', '&lt;/p&gt;&lt;p&gt;', '<xsl:value-of select="." />');
+			echo preg_replace('/^(\s*)(\w+)/', '&lt;span class="first-word"&gt;$2&lt;/span&gt;', preg_replace('/(\n\s*\n\s*)(\w+)/', '&lt;/p&gt;&lt;p class="paragraph"&gt;&lt;span class="first-word"&gt;$2&lt;/span&gt;', '<xsl:value-of select="." />'));
 		?</xsl:processing-instruction>
 		</p>
 	</xsl:template>
@@ -54,8 +54,16 @@
 		</p>
 	</xsl:template>
 	
-	<xsl:template match="p.*">
-		<xsl:value-of select="fn:ceiling(1.1)" />
+	<xsl:template match="component">
+		<div class="component">
+			<xsl:attribute name="id">
+    			<xsl:value-of select="@id"/>
+  			</xsl:attribute>
+  			<h2><xsl:value-of select="title" /></h2>
+  			<div class="component-inner">
+				<xsl:apply-templates />
+			</div>
+		</div>
 	</xsl:template>
 	
 	<xsl:template match="param">
@@ -82,6 +90,10 @@
 		<h1><xsl:apply-templates /></h1>
 	</xsl:template>
 	
+	<xsl:template match="component/title">
+		<h2><xsl:apply-templates /></h2>
+	</xsl:template>
+	
 	<xsl:template match="menu">
 		<nav>
 			<xsl:attribute name="class">
@@ -91,10 +103,11 @@
 		</nav>
 	</xsl:template>
 
-	<xsl:template match="body">
+	<xsl:template match="view-body">
 		<div id="body-wrapper">
 			<div id="body">
-				<xsl:apply-templates />
+				<xsl:apply-templates select="sidebar" />
+				<xsl:apply-templates select="page" />
 			</div>
 		</div>
 	</xsl:template>
@@ -102,7 +115,9 @@
 	<xsl:template match="sidebar">
 		<div class="sidebar">
 			<xsl:attribute name="id">sidebar-<xsl:value-of select="@position"/></xsl:attribute>
+			<xsl:variable name="position" select="concat(@position, '-sidebar')" />
 			<xsl:apply-templates />
+			<xsl:apply-templates select="//component[@position=$position]" />
 		</div>
 	</xsl:template>
 	
@@ -111,3 +126,46 @@
 			<img src="<?php echo Theme::GetLogo(); ?>" />
   		</div>
 	</xsl:template>
+
+	<xsl:template match="form">
+		<form method="post">
+			<xsl:attribute name="action">/<xsl:value-of select="@controller" />/<xsl:value-of select="@action" /></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="@id" />-form</xsl:attribute>
+			<xsl:apply-templates />
+			<input type="submit"><xsl:attribute name="value"><xsl:value-of select="@title" /></xsl:attribute></input>
+		</form>
+	</xsl:template>
+	
+	<xsl:template match="form//control">
+		<xsl:choose>
+			<xsl:when test="@type='text'">
+				<label>
+					<xsl:attribute name="for"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:value-of select="@label" />:
+				</label>
+				<input type="text">
+					<xsl:attribute name="id"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="@value" /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@type='password'">
+				<label>
+					<xsl:attribute name="for"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:value-of select="@label" />:
+				</label>
+				<input type="password">
+					<xsl:attribute name="id"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="@value" /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:otherwise>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<xsl:template match="component/title"></xsl:template>
+	

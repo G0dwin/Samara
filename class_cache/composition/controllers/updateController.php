@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('User', 'composition/domain');
+<?php Samara_Include('User', 'composition/domain');
 Samara_Include('Controller', 'inc');
 Samara_Include('UpdateManager', 'inc');
 
@@ -37,4 +35,3 @@ class UpdateController extends Controller
 	
 }
 
-?>

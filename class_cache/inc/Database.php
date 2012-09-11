@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('Vars', 'inc');
+<?php Samara_Include('Vars', 'inc');
 Samara_Include('UpdateManager', 'inc');
 
 class Database

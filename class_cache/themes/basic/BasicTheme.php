@@ -1,0 +1,6 @@
+<?php Samara_Include('Theme', 'inc');
+
+class BasicTheme extends Theme
+{
+
+}

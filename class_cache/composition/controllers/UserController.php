@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('Controller', 'inc');
+<?php Samara_Include('Controller', 'inc');
 Samara_Include('Vars', 'inc');
 Samara_Include('User', 'composition/domain');
 

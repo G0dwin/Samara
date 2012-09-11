@@ -1,0 +1,54 @@
+<?php Samara_Include('QueryPart', 'inc/queries');
+Samara_Include('ColumnReference', 'inc/queries');
+Samara_Include('DataObject', 'inc');
+
+class AggreateFunction extends ColumnReference
+{
+	protected $function_name;
+	protected $argument;
+	
+	public function __construct($function_name, $argument, $alias = NULL)
+	{
+		$this->function_name = $function_name;
+		$this->argument = $argument;
+		if ($alias === TRUE)
+		{
+			$alias = $function_name.(ColumnReference::IsA($argument) ? $argument->data_object->Name : $argument);
+		}
+		$this->data_object_alias = $alias;
+	}
+
+	public function Compile($table_name_is_required = TRUE)
+	{
+		$funcs = Database::GetAggreateFunctions();
+		return Database::Format($funcs[$this->function_name], array($this->argument->Compile($table_name_is_required))).($this->data_object_alias ? Database::FormatAlias($this->data_object_alias) : '');
+	}
+	
+	public static function IsAggreateFunction($name)
+	{
+		$funcs = Database::GetAggreateFunctions();
+		return isset($funcs[$name]);
+	}
+	
+	public function GetTable($internal_column = 0)
+	{
+		return $this->argument->GetTable();
+	}
+	
+	public function GetTableAlias($internal_column = 0)
+	{
+		return $this->argument->GetTableAlias();
+	}
+	
+	public function GetTableName($internal_column = 0)
+	{
+		return $this->argument->GetTableName();
+	}
+	
+	public function GetDataObject()
+	{
+		return $this->function_name == 'Count' ? new Integer() : $this->argument->GetDataObject();
+	}
+	
+}
+

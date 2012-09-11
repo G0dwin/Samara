@@ -6,27 +6,27 @@
 	<css-file>http://fonts.googleapis.com/css?family=Kranky</css-file>
 	<css-file>http://fonts.googleapis.com/css?family=Rye</css-file>
 	<css-file>http://fonts.googleapis.com/css?family=Miltonian</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Playfair+Display</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=IM+Fell+DW+Pica+SC</css-file>
+	
+	<?php echo Theme::RenderComponent('components'); ?>
 
 	<view-header>
 		<logo /><title>Samara</title><menu name="main" />
 	</view-header>
 
-	<body>
+	<view-body>
 	
 		<sidebar position="left">
 		</sidebar>
-	
-		<sidebar position="right">
-			This is the sidebar
-		</sidebar>
-
 		<?php echo Theme::RenderComponent('page'); ?>
 	
-	</body>
+		<sidebar position="right">
+		</sidebar>
+
+	</view-body>
 	
 	<view-footer>
 	</view-footer>
 	
 </view>
-
-<?php echo Theme::RenderComponent('components'); ?>

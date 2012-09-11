@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('UserName', 'composition/data_types');
+<?php Samara_Include('UserName', 'composition/data_types');
 Samara_Include('Password', 'composition/data_types');
 Samara_Include('DomainObject', 'inc');
 

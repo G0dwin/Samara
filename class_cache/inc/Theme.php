@@ -1,6 +1,4 @@
-<?php
-
-class Theme
+<?php class Theme
 {
 
 	protected static $instance;

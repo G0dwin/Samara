@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('DataObject', 'inc');
+<?php Samara_Include('DataObject', 'inc');
 Samara_Include('ColumnReference', 'inc/queries');
 Samara_Include('Join', 'inc/queries');
 Samara_Include('Insert', 'inc/queries');

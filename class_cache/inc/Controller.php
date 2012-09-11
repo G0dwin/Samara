@@ -1,6 +1,4 @@
-<?php
-
-Samara_Include('Theme', 'inc');
+<?php Samara_Include('Theme', 'inc');
 
 class Controller
 {
