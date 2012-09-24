@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="view">
+		<xsl:call-template name="view">
+			<xsl:with-param name="controller" select="@controller" />
+			<xsl:with-param name="action" select="@action" />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template match="page">
+		<xsl:call-template name="page">
+			<xsl:with-param name="title" select="@title" />
+			<xsl:with-param name="sub-title" select="@sub-title" />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name="page">
+		<xsl:param name="title" />
+		<div id="content">
+			<header><h2><xsl:value-of select="$title" /><xsl:if test="@sub-title">: <span class="sub-title"><xsl:value-of select="@sub-title" /></span></xsl:if></h2></header>
+			<article><xsl:apply-templates /></article>
+			<footer></footer>
+		</div>
+	</xsl:template>
+	
+</xsl:stylesheet>

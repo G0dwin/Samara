@@ -1,0 +1,186 @@
+<?php
+
+Samara_Include('Controller', 'inc');
+Samara_Include('UserController', 'inc/controllers');
+
+class AdminController extends Controller
+{
+	protected function url_exists($url) {
+		// Version 4.x supported
+		$handle = curl_init($url);
+		if (false === $handle)
+		{
+			return false;
+		}
+		curl_setopt($handle, CURLOPT_HEADER, false);
+		curl_setopt($handle, CURLOPT_FAILONERROR, true);  // this works
+		curl_setopt($handle, CURLOPT_HTTPHEADER, Array("User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.15) Gecko/20080623 Firefox/2.0.0.15") ); // request as if Firefox
+		curl_setopt($handle, CURLOPT_NOBODY, true);
+		curl_setopt($handle, CURLOPT_RETURNTRANSFER, false);
+		$connectable = curl_exec($handle);
+		curl_close($handle);
+		return $connectable;
+	}
+	
+	public function __call($name, $args)
+	{
+		if (preg_match('/^canAccess(.+)$/', $name, $matches))
+		{
+			return $this->getInstanceOf('UserController')->IsAdmin();
+		}
+		parent::__call($name, $args);
+	}
+	
+	protected function renderExtensions()
+	{
+		global $samara_extension_repositiory;
+		
+		$subAction = Controller::Param(0);
+		if ($subAction)
+		{
+			$subSubAction = Controller::Param(1);
+			if ($subSubAction)
+			{
+				$extension = $subSubAction;
+				switch ($subAction)
+				{
+					case 'add':
+						if ($this->addExtension($extension))
+						{
+							$this->fullRedirect('extensions');
+						}
+						Theme::SetPageTemplate('<page title="Add Extension"><text type="paragraph">Error installing '.$extension.' extension.</text></page>');
+						return Theme::getView();
+					case 'remove':
+						if ($this->removeExtension($extension))
+						{
+							$this->fullRedirect('extensions');
+						}
+						Theme::SetPageTemplate('<page title="Remove Extension"><text type="paragraph">Error removing '.$extension.' extension.</text></page>');
+						return Theme::getView();
+				}
+			}
+		}
+		
+		$url = $samara_extension_repositiory.'repository/extensions/';
+		$message = '';
+		$str = '';
+		if ($this->url_exists($url))
+		{
+			$str = file_get_contents($url);
+		}
+		else
+		{
+			$message = '<text type="paragraph">Error connecting to extension repositiory: '.$url.'</text>';
+		}
+		$str .= '<extension-list type="installed">';
+		foreach (glob(SAMARA_ROOT.'extensions/*/info.extension') as $filename)
+		{
+    		$str .= file_get_contents($filename);
+		}
+		$str .= '</extension-list>';
+		Theme::SetPageTemplate('<page title="Extensions">'.$message.$this->extensionLinks().'<extension-info>'.$str.'</extension-info></page>');
+		return Theme::getView();
+	}
+	
+	protected function extensionLinks()
+	{
+		return '<menu name="Bulk Operations"><link controller="admin" action="clearCache">Clear Cache</link><link controller="admin" action="updateDatabase">Update Database</link></menu>';
+	}
+
+	protected function processMenu()
+	{
+		if ($this->getInstanceOf('UserController')->IsAdmin())
+		{
+			$this->getInstanceOf('MenuController')->GetMenu('admin')->
+				AddItem('Settings', 'admin/settings')->
+				AddItem('Extensions', 'admin/extensions')->
+				AddItem('Themes', 'admin/themes')->
+				AddItem('Menus', 'admin/menus')->
+				AddItem('Content', 'admin/content');
+		}
+	}
+	
+	protected function addExtension($extension)
+	{
+		global $samara_extension_repositiory;
+		$dir = '/extensions/'.$extension;
+		$localdir = SAMARA_ROOT.'extensions/'.$extension;
+		if (!is_dir($localdir))
+		{
+			mkdir($localdir);
+		}
+		$url = $samara_extension_repositiory.'repository/extensions/'.$extension.'/download.zip';
+		
+		$client = curl_init($url);
+		curl_setopt($client, CURLOPT_RETURNTRANSFER, 1);
+		
+		$fileData = curl_exec($client);
+		
+		$file = tempnam('extensions', $extension.'.zip');
+		file_put_contents($file, $fileData);
+		
+		$zip = new ZipArchive();
+		$x = $zip->open($file);
+		
+		if($x === true)
+		{
+			$zip->extractTo($localdir);
+			$zip->close();
+		
+			unlink($file);
+			return true;
+		}
+		return false;
+	}
+	
+	protected function removeExtension($extension)
+	{
+		$filename = SAMARA_ROOT.'extensions/'.$extension.'/info.extension';
+		if (file_exists($filename))
+		{
+			return unlink($filename);
+		}
+		return false;
+	}
+	
+	protected static function emptyDir($dir)
+	{
+		return is_file($dir) ? @unlink($dir): array_map('AdminController::rmDir', glob($dir.'/*'));
+	}
+
+	protected static function rmDir($dir)
+	{
+		return is_file($dir) ? @unlink($dir): array_map('AdminController::rmDir', glob($dir.'/*'))==@rmdir($dir);
+	}
+	
+	protected function renderClearCache()
+	{
+		$cache_dir = SAMARA_CACHE_DIR;
+		AdminController::emptyDir($cache_dir);
+		//mkdir($cache_dir);
+		$this->fullRedirect('extensions');
+	}
+	
+	public function updateDatabase()
+	{
+		$script = UpdateManager::CreateUpdateScript();
+		if ($script === FALSE)
+		{
+			return null;
+		}
+		if (Database::ExecuteQuery($script) === false)
+		{
+			return false;
+		}
+		return true;
+	}
+	
+	protected function renderUpdateDatabase()
+	{
+		$this->updateDatabase();
+		$this->fullRedirect('extensions');
+	}
+}
+
+

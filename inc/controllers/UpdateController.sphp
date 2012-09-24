@@ -1,0 +1,51 @@
+<?php
+
+Samara_Include('User', 'inc/domain');
+Samara_Include('Controller', 'inc');
+Samara_Include('UpdateManager', 'inc');
+
+class UpdateController extends Controller
+{
+	
+	public function renderDatabase()
+	{
+		switch ($this->updateDatabase())
+		{
+			case null:
+				$message = 'Database is currently up to date';
+				break;
+			case true;
+				$message = 'Successfully updated database';
+				break;
+			case false:
+				$message = 'Error updating database: '.Database::GetLastError();
+				break;
+		}
+		return Theme::getView(array('message' => $message));
+	}
+	
+	public function updateDatabase()
+	{
+		$script = UpdateManager::CreateUpdateScript();
+		//print_r($script);
+		//die();
+		if ($script === FALSE)
+		{
+			return null;
+		}
+		if (Database::ExecuteQuery($script) === FALSE)
+		{
+			return false;
+		}
+		return true;
+	}
+	
+	public function renderInstall()
+	{
+		$admin = new User('admin', 'admin');
+		$admin->Save();
+		return '<text>Installed</text>';
+	}
+	
+}
+

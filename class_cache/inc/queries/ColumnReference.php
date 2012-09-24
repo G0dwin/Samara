@@ -1,4 +1,6 @@
-<?php Samara_Include('QueryPart', 'inc/queries');
+<?php 
+
+Samara_Include('QueryPart', 'inc/queries');
 Samara_Include('DataObject', 'inc');
 
 class ColumnReference extends QueryPart
@@ -11,7 +13,7 @@ class ColumnReference extends QueryPart
 	
 	public function __construct($domain_type, $data_object = NULL, $data_object_alias = NULL)
 	{
-		$this->domain_object = new $domain_type();
+		$this->domain_object = is_string($domain_type) ? new $domain_type() : $domain_type;
 		$this->data_object = $data_object;
 		$this->data_object_alias = $data_object_alias;
 	}

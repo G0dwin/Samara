@@ -1,4 +1,6 @@
-<?php Samara_Include('Operator', 'inc/queries');
+<?php 
+
+Samara_Include('Operator', 'inc/queries');
 
 class LogicalOperator extends Operator
 {

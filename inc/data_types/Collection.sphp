@@ -1,0 +1,248 @@
+<?php
+
+Samara_Include('DataObject', 'inc');
+Samara_Include('DomainObject', 'inc');
+Samara_Include('Reference', 'inc/data_types');
+Samara_Include('CollectionColumnReference', 'inc/queries');
+
+class Collection extends DataObject {
+	
+	protected $type;
+	protected $parent;
+	
+	public function __construct($type, DomainObject $parent, $name = null, $value = null)
+	{
+		parent::__construct($name ?: $type, $value);
+		Samara_Include($type, 'inc/domain');
+		$this->type = $type;
+		$this->parent = $parent;
+	}
+	
+	public function GetType()
+	{
+		return $this->type;
+	}
+	
+	public function GetNativeType()
+	{
+		return null;
+	}
+	
+	public function FormatValue()
+	{
+		return null;
+	}
+	
+	public function ValueOf($value)
+	{
+		return $value ?: array();
+	}
+	
+	public function GetSize()
+	{
+		$value = $this->GetNativeValue();
+		return $value === null ? 0 : count($value);
+	}
+	
+	public function Add($value)
+	{
+		if (is_a($value, $this->type))
+		{
+			if (!$this->value)
+			{
+				$this->value = array();
+			}
+			$this->value[] = $value;
+			return;
+		}
+		throw new \UnexpectedValueException();
+	}
+	
+	public function GetCollectionName()
+	{
+		//return Samara_GetClassName(get_class($this->parent)).$this->name.'Collection';
+		return get_class($this->parent).$this->name.'Collection';
+	}
+	
+	public function GetTableName()
+	{
+		return Samara_ToUnderscoreCase($this->GetCollectionName());
+	}
+	
+	public function GetTable() { return $this->GetTableName(); }
+	
+	public function NativeName() { return $this->GetTableName(); }
+	
+	public function CompileForCreate($tables)//$tables, $columns)
+	{
+		return UpdateManager::CreateUpdateScriptForTable($this->GetTableName(), $this->Properties(), $tables);
+	}
+	
+	protected function Properties()
+	{
+		//return array(new Reference(Samara_GetClassName(get_class($this->parent))), new Reference(Samara_GetClassName($this->type)));
+		return array(new Reference(get_class($this->parent)), new Reference($this->type));
+	}
+	
+	public function IsOutdated($tables)
+	{
+	}
+	
+	public function GetNativeName()
+	{
+		return null;
+	}
+	
+	public function RenderInput()
+	{
+		$types = array();
+		$i = 0;
+		foreach ($this->getInheritanceList(true) as $ancestor)
+		{
+			$types[] = 'type-'.($i++).'="'.$ancestor.'"';
+		}
+		$underscore = Samara_ToUnderscoreCase($this->GetName());
+		
+		$type = $this->type;
+		$object = new $type();
+		$objects = $object->RenderForm('template');
+		
+		foreach ($this->GetValue() as $value)
+		{
+			$objects .= $value->RenderForm('element');
+		}
+		
+		return '<control '.implode(' ', $types).' param="'.$underscore.'" label="'.$this->GetName().'" selected="'.$this->GetValue().'" domain-type="'.Samara_ToUnderscoreCase($type).'">'.$objects.'</control>';
+	}
+	
+	public function SetFromFormResult($prefix = null, $suffix = null)
+	{
+		$type = $this->name;
+		$param = ($prefix ?: '').Samara_ToUnderscoreCase($this->name);
+		if (!$suffix)
+		{
+			$suffix = '';
+		}
+		$i = 0;
+		$newValue = array();
+
+		while (Controller::ParamExists($param.'-id-'.$i.$suffix))
+		{
+			$newValue[] = $this->CreateObjectFromFormResult($i, $param, '', $suffix);
+			$i++;
+		}
+		$this->SetValue($newValue);
+		return true;
+	}
+	
+	public function CreateObjectFromFormResult($index, $param, $prefix = null, $suffix = null)
+	{
+		$type = $this->name;
+		$newObject = new $type();
+		$newObject->SetFromFormResult(($prefix ?: '').$param.'-', '-'.$index.($suffix ?: ''));
+		return $newObject;
+	}
+
+	public function IsColumn()
+	{
+		return false;
+	}
+	
+	public function PostSave()
+	{
+		$ids = array();
+		foreach ($this->GetValue() as $object)
+		{
+			if ($object->ID->Value)
+			{
+				$ids[] = $object->ID->Value;
+			}
+		}
+
+		$parent = $this->parent;
+		$type = $this->type;
+		
+		$sql = array();
+		
+		foreach ($this->value as $object)
+		{
+			$sql = array_merge($sql, $this->SaveItem($object));
+			$ids[] = $this->GetObject($object)->ID->Value;
+		}
+		//$parentID = new CollectionColumnReference($this, Samara_GetClassName(get_class($parent)));
+		$parentID = new CollectionColumnReference($this, get_class($parent));
+		$typeID = new CollectionColumnReference($this, $type);
+		if (!empty($ids))
+		{
+			$sql[] = Database::Delete($this)->Where($parentID->Equals($parent->ID->Value), $typeID->IsNotOneOf($ids))->Compile();
+			$sql[] = Database::Delete($type)->Where($type::ID()->IsNotOneOf($ids))->Compile();
+		}
+		else
+		{
+			$sql[] = Database::Delete($this)->Where($parentID->Equals($parent->ID->Value))->Compile();
+			$sql[] = Database::Delete($type)->Compile();
+		}
+		
+		Database::ExecuteQuery($sql);
+	}
+	
+	protected function GetObject($object)
+	{
+		return $object;
+	}
+	
+	protected function SaveItem($object)
+	{
+		$sql = array();
+		$actual_object = $this->GetObject($object);
+		
+		$new = !$actual_object->ID->Value;
+		$actual_object->Save();
+		$script = null;
+		if ($new)
+		{
+			$script = $this->CreateInsertScript($object);
+		}
+		else
+		{
+			$script = $this->CreateUpdateScript($object);
+		}
+		return $script ? array($script->Compile()) : array();
+	}
+	
+	protected function CreateUpdateScript($object)
+	{
+		return null;
+	}
+	
+	protected function CreateInsertScript($object)
+	{
+		$parent = $this->parent;
+		$parentID = new CollectionColumnReference($this, get_class($parent), $parent->ID->Value);
+		$type = $this->type;
+		$typeID = new CollectionColumnReference($this, $type, $this->GetObject($object)->ID->Value);
+		
+		return Database::Insert($parentID, $typeID);
+	}
+	
+	public function PostLoad()
+	{
+		$type = $this->type;
+		$sql = $this->selectAllQuery();
+		$this->SetValue($type::CreateFromQuery($sql));
+	}
+	
+	protected function selectAllQuery()
+	{
+		$type = $this->type;
+		$parent = $this->parent;
+		$typeID = new CollectionColumnReference($this, $type);
+		//$parentID = new CollectionColumnReference($this, Samara_GetClassName(get_class($parent)));
+		$parentID = new CollectionColumnReference($this, get_class($parent));
+		$collection = new CollectionColumnReference($this);
+		return Database::Select($type::All())->Join($collection->On($typeID->Equals($type::ID())))->Where($parentID->Equals($parent->ID->Value));
+	}
+	
+}
+
+Samara_Include('UpdateManager', 'inc');

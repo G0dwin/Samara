@@ -5,7 +5,7 @@ ErrorDocument 404 /index.php
 # Set the default handler.
 DirectoryIndex index.php index.html index.htm
 
-<FilesMatch "\.(s?php|x[m|s]l)$">
+<FilesMatch "\.(s?php|x[m|s]l|view)$">
   Order allow,deny
 </FilesMatch>
 

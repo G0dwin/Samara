@@ -1,0 +1,23 @@
+<?php
+
+Samara_Include('DomainObject', 'inc');
+
+class Attribute extends DomainObject
+{
+	
+	public function __construct($name = null, $value = null)
+	{
+		parent::__construct();
+		$this->Name->Value = $name;
+		$this->Value->Value = $value;
+	}
+	
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new Title('Name'));
+		$this->AddProperty(new String('Value', 64))->MakeNullable();
+	}
+	
+}
+

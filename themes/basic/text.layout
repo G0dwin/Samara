@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="text[@type='paragraph']">
+		<xsl:call-template name="paragraph">
+			<xsl:with-param name="text" select="." />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template name="paragraph">
+		<xsl:param name="text" />
+		
+		<xsl:variable name="head" select="substring-before($text, '&#10;')" />
+		<xsl:variable name="tail" select="substring-after($text, '&#10;')" />
+		
+  		<p class="paragraph first-paragraph">
+			<xsl:call-template name="split-first-word">
+				<xsl:with-param name="text" select="normalize-space($head)" />
+			</xsl:call-template>
+			<xsl:if test="$tail">
+				<xsl:call-template name="paragraph-continue">
+					<xsl:with-param name="text" select="$tail" />
+					<xsl:with-param name="isfirst" select="string-length(normalize-space($head))" />
+				</xsl:call-template>
+			</xsl:if>
+		</p>
+	</xsl:template>
+
+	<xsl:template name="paragraph-continue">
+		<xsl:param name="text" />
+		<xsl:param name="isfirst" select="1" />
+		
+		<xsl:variable name="head" select="substring-before($text, '&#10;')" />
+		<xsl:variable name="tail" select="substring-after($text, '&#10;')" />
+		
+		<xsl:variable name="head-count" select="string-length(normalize-space($head))" />
+		<xsl:variable name="tail-count" select="string-length(normalize-space($tail))" />
+		<xsl:if test="$head-count &lt; 1">
+			<xsl:text disable-output-escaping="yes">&lt;/p&gt;</xsl:text>
+			<xsl:if test="$tail-count &gt; 0">
+				<xsl:text disable-output-escaping="yes">&lt;p class="paragraph"&gt;</xsl:text>
+			</xsl:if>
+		</xsl:if>
+		<xsl:if test="$head-count &gt; 0">
+			<xsl:if test="$isfirst &gt; 0">
+				<xsl:text disable-output-escaping="yes">&#32;</xsl:text>
+				<xsl:value-of select="normalize-space($head)" />
+			</xsl:if>
+			<xsl:if test="$isfirst &lt; 1">
+				<xsl:call-template name="split-first-word">
+					<xsl:with-param name="text" select="normalize-space($head)" />
+				</xsl:call-template>
+			</xsl:if>
+		</xsl:if>
+		<xsl:if test="$tail-count &gt; 0">
+			<xsl:call-template name="paragraph-continue">
+				<xsl:with-param name="text" select="$tail" />
+				<xsl:with-param name="isfirst" select="$head-count" />
+			</xsl:call-template>
+		</xsl:if>
+		
+	</xsl:template>
+	
+	<xsl:template name="split-first-word">
+		<xsl:param name="text" />
+		
+		<xsl:variable name="head" select="substring-before($text, ' ')" />
+		<xsl:variable name="tail" select="concat(' ', substring-after($text, ' '))" />
+		<xsl:if test="string-length($head) &gt; 0">
+			<span class="first-word"><xsl:value-of select="$head" /></span><xsl:value-of select="$tail" />
+		</xsl:if>
+		<xsl:if test="string-length(normalize-space($head)) &lt; 1">
+			<xsl:if test="string-length(normalize-space($tail)) &gt; 0">
+				<xsl:call-template name="split-first-word">
+					<xsl:with-param name="text" select="normalize-space($tail)" />
+				</xsl:call-template>
+			</xsl:if>
+		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template name="pluralise">
+		<xsl:param name="text" />
+		<xsl:value-of select="concat($text, 's')" />
+	</xsl:template>
+	
+</xsl:stylesheet>

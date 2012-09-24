@@ -2,9 +2,6 @@
 
 require_once 'Samara_TestCase.php';
 
-/**
- * test case.
- */
 class IncludeTest extends Samara_TestCase {
 	
 	public function __construct()
@@ -26,7 +23,7 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function testObjectsCanOverrideMethods()
 	{
-		$class = $this->namespace.'\Test';
+		$class = $this->GetClass('Test');//$this->namespace.'\Test';
 	
 		Samara_Around('Test', 'Tests/artifacts/Test2');
 		
@@ -40,7 +37,7 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function testCanSupportMultipleModulesForOneClass()
 	{
-		$class = $this->namespace.'\Test';
+		$class = $this->GetClass('Test');//$this->namespace.'\Test';
 	
 		Samara_Around('Test', 'Tests/artifacts/Test2');
 		Samara_Around('Test', 'Tests/artifacts/Test3');

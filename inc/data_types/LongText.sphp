@@ -1,0 +1,29 @@
+<?php
+
+Samara_Include('String', 'inc/data_types');
+
+class LongText extends String
+{
+	
+	public function __construct($name = NULL, $value = NULL)
+	{
+		parent::__construct($name, NULL, $value);
+	}
+	
+	public function GetNativeType()
+	{
+		return 'TEXT';
+	}
+	
+	public function CanHaveDefaultValue()
+	{
+		return false;
+	}
+	
+	/*public function GetValue()
+	{
+		return preg_replace('/\\n/', '&lt;/p&gt;&lt;p&gt;', $this->value);
+	}*/
+	
+}
+

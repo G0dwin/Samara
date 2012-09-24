@@ -1,4 +1,6 @@
-<?php Samara_Include('Where', 'inc/queries');
+<?php 
+
+Samara_Include('Where', 'inc/queries');
 
 class Having extends Where
 {

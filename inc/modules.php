@@ -17,13 +17,19 @@ function Samara_Around($class, $file)
 function Samara_GetAroundMods($class)
 {
 	global $samara_modules;
+	$class = trim($class, '\\');
 	if (!isset($samara_modules[$class]))
 	{
 		return null;
+	}
+	//throw new Exception($class);
+	if (count($samara_modules) > 0)//strstr($class, 'Database'))
+	{
 	}
 	if (!isset($samara_modules[$class]['around']))
 	{
 		return null;
 	}
+	//throw new Exception(count($samara_modules).'::'.$class.'::'.var_export($samara_modules, TRUE));
 	return $samara_modules[$class]['around'];
 }

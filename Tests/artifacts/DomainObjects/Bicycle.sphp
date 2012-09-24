@@ -1,9 +1,9 @@
 <?php
 
 Samara_Include('DomainObject', 'inc');
-Samara_Include('Integer', 'inc/primitive_types');
-Samara_Include('String', 'inc/primitive_types');
-Samara_Include('Reference', 'inc/primitive_types');
+Samara_Include('Integer', 'inc/data_types');
+Samara_Include('String', 'inc/data_types');
+Samara_Include('Reference', 'inc/data_types');
 
 class Bicycle extends DomainObject
 {

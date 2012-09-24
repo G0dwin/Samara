@@ -6,17 +6,21 @@ class UpdateManagerTest extends Samara_TestCase
 {
 	public function setUp()
 	{
-		global $samara_modules;
+		/*global $samara_modules;
 		$samara_modules = array();
 		Samara_Around('Database', 'Tests/artifacts/MockDatabase');
 		Samara_Around('UpdateManager', 'Tests/artifacts/MockUpdateManager');
 		$this->reset_modules = FALSE;
-		parent::setUp();
+		parent::setUp();*/
+		//throw new Exception(class_exists('Database') ? 'TRUE' : 'FALSE');
 		Samara_Include('Database', 'inc');
 	}
 	
 	public function testGetTableList()
 	{
+		//global $samara_modules;
+		//print_r($samara_modules);
+		
 		$UpdateManager = $this->GetClass();
 		$Database = $this->GetClass('Database');
 		

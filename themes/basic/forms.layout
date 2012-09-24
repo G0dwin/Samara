@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="form">
+		<xsl:variable name="id" select="translate(@action, ' ', '-')" />
+		<form method="post">
+			<xsl:attribute name="action">/<xsl:value-of select="@controller" />/<xsl:value-of select="@action" /></xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="$id" />-form</xsl:attribute>
+			<!-- <xsl:for-each select="control">
+				<xsl:call-template name="control"><xsl:with-param name="control" select="." /><xsl:with-param name="id" select="$id" /></xsl:call-template>
+			</xsl:for-each> -->
+			<xsl:apply-templates select="control"><xsl:with-param name="id" select="$id" /></xsl:apply-templates>
+			<input type="submit"><xsl:attribute name="value"><xsl:value-of select="@title" /></xsl:attribute></input>
+		</form>
+	</xsl:template>
+	
+	<xsl:template match="form[@type='template']|form[@type='element']">
+		<xsl:variable name="name" select="translate(ancestor::control/@param, ' ', '-')" />
+		<xsl:variable name="id" select="translate(concat(ancestor::form/@id, '-', $name), ' ', '-')" />
+		<!--<xsl:for-each select="control">
+			<xsl:call-template name="control"><xsl:with-param name="control" select="." /><xsl:with-param name="id" select="$id" /></xsl:call-template>
+		</xsl:for-each> -->
+		<xsl:apply-templates select="control"><xsl:with-param name="id" select="$id" /><xsl:with-param name="name" select="concat($name, '-')" /></xsl:apply-templates>
+	</xsl:template>
+	
+	<xsl:template match="form//control">
+		<xsl:param name="id" select="concat(ancestor::form/@id, '-', @param)" />
+		<xsl:param name="name" select="''" />
+		<xsl:param name="this-id" select="translate(concat($id, '-', @param), ' ', '-')" />
+		<xsl:param name="this-name" select="concat($name, @param)" />
+		<xsl:choose>
+			<xsl:when test="@*[starts-with(name(), 'type')]='collection'">
+				<fieldset>
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@domain-type" /> collection <xsl:value-of select="@class" /></xsl:attribute>
+					<legend><xsl:call-template name="pluralise"><xsl:with-param name="text" select="@label" /></xsl:call-template>:</legend>
+					<div class="collection-template">
+						<ul>
+							<xsl:attribute name="class">
+								templates <xsl:if test="@*[starts-with(name(), 'type')]='weighted_collection'">weighted</xsl:if>
+							</xsl:attribute>
+							<xsl:for-each select="form[@type='element']">
+								<li>
+								<xsl:apply-templates select="." /><a onclick="softRemoveTemplate(this)" class="remove-template" title="Remove this item"></a>
+								</li>
+							</xsl:for-each>
+						</ul>
+						<div class="new-item-template"><xsl:apply-templates select="form[@type='template']" /></div>
+						<input type="button" class="template-add"><xsl:attribute name="id"><xsl:value-of select="concat($this-id, '--add')" /></xsl:attribute><xsl:attribute name="value">Add</xsl:attribute></input>
+					</div>
+				</fieldset>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='long_text'">
+				<label><xsl:attribute name="for"><xsl:value-of select="$this-id" /></xsl:attribute><xsl:value-of select="@label" />:</label>
+				<textarea>
+					<xsl:attribute name="id"><xsl:value-of select="$id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+					<xsl:value-of select="." />
+				</textarea>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='identifier'">
+				<input type="hidden">
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="." /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='owner'">
+				<input type="hidden">
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="." /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='string'">
+				<label><xsl:attribute name="for"><xsl:value-of select="$this-id" /></xsl:attribute><xsl:value-of select="@label" />:</label>
+				<input type="text">
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="." /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='text'">
+				<label><xsl:attribute name="for"><xsl:value-of select="$this-id" /></xsl:attribute><xsl:value-of select="@label" />:</label>
+				<input type="text">
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="." /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='password'">
+				<label><xsl:attribute name="for"><xsl:value-of select="$this-id" /></xsl:attribute><xsl:value-of select="@label" />:</label>
+				<input type="password">
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="value"><xsl:value-of select="." /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+				</input>
+			</xsl:when>
+			<xsl:when test="@*[starts-with(name(), 'type')]='reference'">
+				<label><xsl:attribute name="for"><xsl:value-of select="$this-id" /></xsl:attribute><xsl:value-of select="@label" />:</label>
+				<select>
+					<xsl:attribute name="id"><xsl:value-of select="$this-id" /></xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="$this-name" /></xsl:attribute>
+					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
+					<xsl:variable name="selected" select="@selected" />
+					<xsl:for-each select="object">
+					<option>
+						<xsl:attribute name="value"><xsl:value-of select="@id" /></xsl:attribute>
+						<xsl:if test="@id=$selected">
+							<xsl:attribute name="selected"><xsl:value-of select="selected" /></xsl:attribute>
+						</xsl:if>
+						<xsl:value-of select="@display-name" />
+					</option>
+					</xsl:for-each>
+				</select>
+				<!-- <xsl:apply-templates /> -->
+			</xsl:when>
+			<xml:otherwise>
+				<label>
+					<xsl:attribute name="for"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
+					<xsl:value-of select="@label" />::
+				</label>
+				<input type="text" />
+			</xml:otherwise>
+			<xsl:otherwise>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+</xsl:stylesheet>

@@ -1,24 +1,33 @@
-<view>
+<view controller="<?php echo Controller::GetControllerName(); ?>" action="<?php echo Controller::GetAction(); ?>" >
 
+	<css-file>/themes/basic/css/smoothness/jquery-ui-1.8.23.custom.css</css-file>
+	<css-file>/themes/basic/js/chosen.css</css-file>
 	<?php echo Theme::RenderComponent('css-files'); ?>
 	<css-file>http://fonts.googleapis.com/css?family=Codystar</css-file>
-
-	<css-file>http://fonts.googleapis.com/css?family=Kranky</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Rye</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Miltonian</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=Playfair+Display</css-file>
-	<css-file>http://fonts.googleapis.com/css?family=IM+Fell+DW+Pica+SC</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Open Sans</css-file>
+	<css-file>http://fonts.googleapis.com/css?family=Fredericka+the+Great</css-file>
+	
+	<js-file>//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js</js-file>
+	<js-file>/themes/basic/js/jquery-ui-1.8.23.custom.min.js</js-file>
+	<js-file>/themes/basic/js/chosen.js</js-file>
+	<js-file>/themes/basic/js/jquery.elastic.source.js</js-file>
+	<?php echo Theme::RenderComponent('js-files'); ?>
+		
+	<?php echo Theme::RenderComponent('app-icon'); ?>
 	
 	<?php echo Theme::RenderComponent('components'); ?>
 
+	<?php echo Theme::RenderComponent('menus'); ?>
+	
 	<view-header>
-		<logo /><title>Samara</title><menu name="main" />
+		<link controller="" action=""><logo /><title>Samara</title></link>
 	</view-header>
 
 	<view-body>
 	
 		<sidebar position="left">
 		</sidebar>
+		
 		<?php echo Theme::RenderComponent('page'); ?>
 	
 		<sidebar position="right">

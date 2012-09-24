@@ -1,0 +1,91 @@
+<?php
+
+Samara_Include('Collection', 'inc/data_types');
+Samara_Include('Integer', 'inc/data_types');
+
+class WeightedCollection extends Collection
+{
+	
+	protected function selectAllQuery()
+	{
+		$weight = new CollectionColumnReference($this, new Integer('Weight'));
+		$sql = parent::selectAllQuery();
+		return $sql->OrderBy($weight);
+	}
+	
+	public function GetValue()
+	{
+		$value = array();
+		foreach ($this->value as $v)
+		{
+			$value[] = $v['value'];
+		}
+		return $value;
+	}
+	
+	public function SetValue($value)
+	{
+		$this->value = array();
+		if ($value)
+		{
+			$i = 0;
+			foreach ($value as $v)
+			{
+				$this->value[] = array(
+										'value' => $v,
+										'weight' => $i++
+									);
+			}
+		}
+		return $value;
+	}
+	
+	public function Add($value, $weight = 0)
+	{
+		if (is_a($value, $this->type))
+		{
+			if (!$this->value)
+			{
+				$this->value = array();
+			}
+			$this->value[] = array(
+									'value' => $value,
+									'weight' => $weight
+								);
+			return;
+		}
+		throw new \UnexpectedValueException('Expecting type '.$this->type.' but received value '.(is_object($value) ? 'of type '.get_class($value) : $value));
+	}
+	
+	protected function Properties()
+	{
+		$properties = parent::Properties();
+		$properties[] = new Integer('Weight');
+		return $properties;
+	}
+	
+	protected function CreateInsertScript($object)
+	{
+		$weight = new CollectionColumnReference($this, new Integer('Weight'), $object['weight']);
+		return parent::CreateInsertScript($object)->AddColumns($weight);
+	}
+	
+	protected function GetObject($object)
+	{
+		return $object['value'];
+	}
+	
+	protected function CreateUpdateScript($object)
+	{
+		//print_r($object);
+		$parent = $this->parent;
+		$parentID = new CollectionColumnReference($this, get_class($parent));
+		$type = $this->type;
+		$typeID = new CollectionColumnReference($this, $type);
+		$weight = new CollectionColumnReference($this, new Integer('Weight'), $object['weight']);
+		
+		return Database::Update($weight)->Where($parentID->Equals($parent->ID->Value), $typeID->Equals($this->GetObject($object)->ID->Value));
+	}
+	
+}
+

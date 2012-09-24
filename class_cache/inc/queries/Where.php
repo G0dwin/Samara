@@ -1,4 +1,6 @@
-<?php Samara_Include('QueryPart', 'inc/queries');
+<?php 
+
+Samara_Include('QueryPart', 'inc/queries');
 
 class Where extends QueryPart
 {

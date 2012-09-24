@@ -1,4 +1,6 @@
-<?php Samara_Include('ColumnReference', 'inc/queries');
+<?php 
+
+Samara_Include('ColumnReference', 'inc/queries');
 
 class Operator extends ColumnReference
 {

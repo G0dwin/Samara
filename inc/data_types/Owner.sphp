@@ -1,0 +1,13 @@
+<?php
+
+Samara_Include('UserReference', 'inc/data_types');
+Samara_Include('UserController', 'inc/controllers');
+
+class Owner extends UserReference
+{
+	public function __construct($name = NULL, $value = NULL)
+	{
+		parent::__construct($name ?: 'Owner', $value ?: UserController::GetCurrentUserID());
+	}
+}
+

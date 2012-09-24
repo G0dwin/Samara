@@ -1,4 +1,6 @@
-<?php Samara_Include('TableAlias', 'inc/queries');
+<?php 
+
+Samara_Include('TableAlias', 'inc/queries');
 Samara_Include('Database', 'inc');
 
 class SubQuery extends TableAlias

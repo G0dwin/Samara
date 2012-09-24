@@ -1,9 +1,11 @@
-<?php Samara_Include('Database', 'inc');
+<?php 
+
+Samara_Include('Database', 'inc');
 Samara_Include('Query', 'inc/queries');
 Samara_Include('ColumnReference', 'inc/queries');
 Samara_Include('TableAlias', 'inc/queries');
-Samara_Include('Where', 'inc/queries');
-Samara_Include('Having', 'inc/queries');
+Samara_Include('WhereStatement', 'inc/queries');
+Samara_Include('HavingStatement', 'inc/queries');
 Samara_Include('SubQuery', 'inc/queries');
 Samara_Include('DomainObject', 'inc');
 
@@ -37,7 +39,7 @@ class SelectQuery extends Query
 	public function Where()
 	{
 		$conditions = func_get_args();
-		$this->where = new Where($conditions);
+		$this->where = new WhereStatement($conditions);
 		return $this;
 	}
 	
@@ -67,7 +69,8 @@ class SelectQuery extends Query
  			else if (DomainObject::IsA($col, TRUE))
  			{
  				$all = new ColumnReference($col);
- 				$tname = Samara_GetClassName($col);
+ 				//$tname = Samara_GetClassName($col);
+ 				$tname = $col;
  				if (!isset($cols[$tname]))
  				{
  					$cols[$tname] = array();
@@ -280,7 +283,8 @@ class SelectQuery extends Query
  	{
  		if (DomainObject::IsA(is_string($stmt) ? new $stmt() : $stmt))
  		{
- 			$property = Samara_GetClassName(is_string($stmt) ? $stmt : get_class($stmt));
+ 			//$property = Samara_GetClassName(is_string($stmt) ? $stmt : get_class($stmt));
+ 			$property = is_string($stmt) ? $stmt : get_class($stmt);
  			foreach ($this->columns as $column)
  			{
  				$do = $column->GetDomain();
@@ -290,7 +294,8 @@ class SelectQuery extends Query
  					if ($column->HasTableAlias())
  					{
  						$alias = $column->GetTableAlias();
- 						$col = call_user_func_array(Samara_GetFullClassName(TableAlias).'::'.$alias, array($col));
+ 						//$col = call_user_func_array(Samara_GetFullClassName(TableAlias).'::'.$alias, array($col));
+ 						$col = call_user_func_array(TableAlias.'::'.$alias, array($col));
  					}
  					return $this->CreateCrossJoin($stmt::On($stmt::Equals($col)), $inner);
  				}
@@ -306,14 +311,14 @@ class SelectQuery extends Query
  	
  	public function CreateCrossJoin($stmt, $inner = TRUE)
  	{
- 		if (!Join::IsA($stmt))
+ 		if (!JoinStatement::IsA($stmt))
  		{
  			$table = $stmt;
  			if (!ColumnReference::IsA($table))
  			{
  				$table = new ColumnReference($table);
  			}
- 			$stmt = new Join($table);
+ 			$stmt = new JoinStatement($table);
  		}
  		if (!$this->joins)
  		{
@@ -373,7 +378,7 @@ class SelectQuery extends Query
  	public function Having()
  	{
  		$conditions = func_get_args();
- 		$this->having = new Having($conditions);
+ 		$this->having = new HavingStatement($conditions);
  		return $this;
  	}
 }

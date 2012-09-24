@@ -1,0 +1,37 @@
+<?php
+
+Samara_Include('Renderable', 'inc');
+
+class Link implements Renderable
+{
+
+	protected $name;
+	protected $controller;
+	protected $action;
+	protected $params;
+	
+	public function __construct($name, $controller, $action = null, $params = null)
+	{
+		$this->name = $name;
+		$this->controller = $controller;
+		$this->action = $action;
+		$this->params = $params;
+	}
+	
+	public function Render()
+	{
+		return '<link controller="'.($this->controller ?: '').'" action="'.($this->action ?: '').'" params="'.($this->params == null ? '' : explode($this->params, ' ')).'">'.$this->name.'</link>';
+	}
+	
+	public function Name()
+	{
+		return $this->name;
+	}
+	
+	public function Url()
+	{
+		return $this->name;
+	}
+	
+}
+

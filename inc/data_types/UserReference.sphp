@@ -1,0 +1,13 @@
+<?php
+
+Samara_Include('Reference', 'inc/data_types');
+
+class UserReference extends Reference
+{
+	
+	public function __construct($name = NULL, $value = NULL)
+	{
+		parent::__construct('User', $name, $value);
+	}
+
+}

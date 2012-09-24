@@ -1,4 +1,6 @@
-<?php class Vars
+<?php 
+
+class Vars extends SamaraBase
 {
 	
 	protected static $instance;

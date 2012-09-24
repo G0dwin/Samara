@@ -1,0 +1,14 @@
+<?php
+
+Samara_Include('WhereStatement', 'inc/queries');
+
+class HavingStatement extends WhereStatement
+{
+	protected function WhereFormat()
+	{
+		return 'HAVING ';
+	}
+	
+}
+
+?>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:template match="object">
+		<div>
+			<xsl:attribute name="class"><xsl:value-of select="@type" /></xsl:attribute>
+			<xsl:apply-templates />
+		</div>
+	</xsl:template>
+	
+	<xsl:template match="object//field">
+		<xsl:choose>
+			<xsl:when test="@*[starts-with(name(), 'type')]='long_text'">
+				<p class="paragraph first-paragraph">
+					<xsl:processing-instruction name="php">
+						echo str_replace('&#128;', &quot;'&quot;, preg_replace('/^(\s*)(\w+)/', '&lt;span class="first-word"&gt;$2&lt;/span&gt;', preg_replace('/(\n\s*\n\s*)(\w+)/', '&lt;/p&gt;&lt;p class="paragraph"&gt;&lt;span class="first-word"&gt;$2&lt;/span&gt;', '<xsl:value-of select="translate(., &quot;'&quot;, &quot;&#128;&quot;)" />')));
+					?</xsl:processing-instruction>
+				</p>
+			</xsl:when>
+		</xsl:choose>
+	</xsl:template>
+
+</xsl:stylesheet>

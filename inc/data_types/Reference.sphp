@@ -1,0 +1,68 @@
+<?php
+
+Samara_Include('Integer', 'inc/data_types');
+
+class Reference extends Integer {
+	
+	protected $type;
+	protected $cached_value;
+	
+	public function __construct($type, $name = NULL, $value = NULL)
+	{
+		parent::__construct($name ?: $type, $value);
+		$this->type = $type;
+	}
+	
+	public function GetNativeName()
+	{
+		return parent::GetNativeName().'_id';
+	}
+	
+	/*public function GetValue()
+	{
+		if ($this->cached_value === null)
+		{
+			// TODO: Lookup value in Database
+		}
+		return $this->cached_value;
+	}*/
+	
+	public function IsUnsigned()
+	{
+		return true;
+	}
+	
+	public function Render($form_view = false)
+	{
+		return '';
+		$type = $this->type;
+		$object = $type::Get($this->GetValue());
+		return $object->Render($form_view);
+	}
+	
+	public function RenderInput()
+	{
+		$types = array();
+		$i = 0;
+		foreach ($this->getInheritanceList(true) as $ancestor)
+		{
+			$types[] = 'type-'.($i++).'="'.$ancestor.'"';
+		}
+		$underscore = Samara_ToUnderscoreCase($this->GetName());
+		//die($underscore);
+		$field = '<control '.implode(' ', $types).' param="'.$underscore.'" value="'.str_replace("\n", '&amp;&#35;xA;', $this->GetValue()).'" label="'.$this->GetName().'" selected="'.$this->GetValue().'">';
+		$type = $this->type;
+		if ($this->IsNullable())
+		{
+			$object = new $type();
+			$field .= $object->Render(true);
+		}
+		foreach ($type::GetAll() as $object)
+		{
+			$field .= $object->Render(true);
+		}
+		$field .= '</control>';
+		return $field;
+	}
+	
+}

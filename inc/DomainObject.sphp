@@ -1,13 +1,8 @@
 <?php
 
-Samara_Include('DataObject', 'inc');
-Samara_Include('ColumnReference', 'inc/queries');
-Samara_Include('Join', 'inc/queries');
-Samara_Include('Insert', 'inc/queries');
-Samara_Include('Update', 'inc/queries');
-Samara_Include('Identifier', 'inc/primitive_types');
+Samara_Include('Renderable', 'inc');
 
-abstract class DomainObject {
+abstract class DomainObject implements Renderable {
 	
 	protected $properties;
 	protected $last_alias;
@@ -15,16 +10,17 @@ abstract class DomainObject {
 	public function __construct()
 	{
 		$this->Properties();
-		$args = func_get_args();
+		/*$args = func_get_args();
 		if ($args)
 		{
 			call_user_func_array(array($this, 'Load'), $args);
-		}
+		}*/
 	}
 		
 	public static function NativeName()
 	{
-		return Samara_ToUnderscoreCase(Samara_GetClassName(get_called_class()));
+		//return Samara_ToUnderscoreCase(Samara_GetClassName(get_called_class()));
+		return Samara_ToUnderscoreCase(get_called_class());
 	}
 	
 	protected function Properties()
@@ -49,23 +45,40 @@ abstract class DomainObject {
 		foreach ($values as $value)
 		{
 			$name = $value->Name;
-			if ($name != 'ID')
+			if ($name != 'ID' && $value->IsColumn())
 			{
+				$value->PreSave();
 				$properties[] = $type::$name($value->Value);
 			}
 		}
 		if ($this->ID->Value !== null)
 		{
-			$reflector = new ReflectionClass('Update');
+			$reflector = new ReflectionClass('UpdateQuery');
 			$query = $reflector->newInstanceArgs($properties);
-			$query->Where($type::ID($this->ID));
+			$query->Where($type::ID()->Equals($this->ID->Value));
+			Database::ExecuteQuery($query->Compile());
+			/*if (!Database::ExecuteQuery(Database::Update($properties)->Where($type::ID()->Equals($this->ID->Value))->Compile()))
+			{
+				return false;
+			}*/
 		}
 		else
 		{
-			$reflector = new ReflectionClass('Insert');
+			$reflector = new ReflectionClass('InsertQuery');
 			$query = $reflector->newInstanceArgs($properties);
+			Database::ExecuteQuery($query->Compile());
+			/*if (!Database::ExecuteQuery(Database::Insert($properties)->Compile()))
+			{
+				return false;
+			}*/
+			$this->ID->Value = Database::GetLatestID();
 		}
-		Database::ExecuteQuery($query->Compile());
+		//$id = Database::GetLatestID();//Database::ExecuteQuery($query->Compile());
+		foreach ($values as $value)
+		{
+			$value->PostSave();
+		}
+		return $this->ID->Value;
 	}
 	
 	public static function _($alias)
@@ -84,7 +97,7 @@ abstract class DomainObject {
 		{
 			$this->properties = array();
 		}
-		$this->properties[] = $property;
+		return $this->properties[] = $property;
 	}
 	
 	public static function GetDataStructure()
@@ -143,16 +156,98 @@ abstract class DomainObject {
 		{
 			return new ComparisonOperator($name, array_merge(array(new ColumnReference($class, $do->ID)), $args));
 		}
-		$class = get_class($this);
+		if (substr($name, 0, 6) === 'FindBy')
+		{
+			return call_user_func_array(array($class, 'FindBy'), array_merge(array(preg_replace('/^(FindBy)(.*)$/', '$2', $name)), $args));
+		}
+		if (substr($name, 0, 9) === 'FindOneBy')
+		{
+			return call_user_func_array(array($class, 'FindOneBy'), array_merge(array(preg_replace('/^(FindOneBy)(.*)$/', '$2', $name)), $args));
+		}
+
 		$trace = debug_backtrace();
 		$file = $trace[0]['file'];
 		$line = $trace[0]['line'];
 		trigger_error("Call to undefined method $class::$name() in $file on line $line", E_USER_ERROR);
 	}
 	
+	protected static function FindBy($property, $value)
+	{
+		$class = get_called_class();
+		$results = Database::ExecuteQuery(Database::Select($class::All())->Where($class::$property()->Equals($value)));
+		$objects = array();
+		foreach ($results as $result)
+		{
+			$objects[] = $class::fromDBResult($result);
+		}
+		return $objects;
+	}
+	
+	protected static function FindOneBy($property, $value)
+	{
+		$class = get_called_class();
+		$result = Database::ExecuteQuery(Database::Select($class::All())->Where($class::$property()->Equals($value))->Limit(1));
+		$result = $result[0];
+		return $class::fromDBResult($result);
+	}
+	
+	public static function Get($id)
+	{
+		$class = get_called_class();
+		return $class::FindOneByID('ID', $id);
+	}
+	
+	public static function CountAll()
+	{
+		$class = get_called_class();
+		$results = Database::ExecuteQuery(Database::Select($class::All()->Count('count')));
+		return $results[0]['count'];
+	}
+
+	public static function GetAll($load = true)
+	{
+		$class = get_called_class();
+		$results = Database::ExecuteQuery(Database::Select($class::All()));
+		$objects = array();
+		foreach ($results as $result)
+		{
+			$objects[] = $load ? $class::fromDBResult($result) : $result['id'];
+		}
+		return $objects;
+	}
+	
+	public static function CreateFromQuery($query)
+	{
+		$class = get_called_class();
+		$results = Database::ExecuteQuery($query);
+		$objects = array();
+		foreach ($results as $result)
+		{
+			$objects[] = $class::fromDBResult($result);
+		}
+		return $objects;
+	}
+	
+	protected static function fromDBResult($result)
+	{
+		$class = get_called_class();
+		$object = new $class();
+		foreach ($object->GetProperties() as $property)
+		{
+			$property->PreLoad();
+			if ($property->IsColumn())
+			{
+				$property_name = $property->Name;
+				$object->$property_name = $result[$property->NativeName];
+			}
+			$property->PostLoad();
+		}
+		return $object;
+	}
+	
 	public static function On(ComparisonOperator $condition = NULL)
 	{
-		return new Join(new ColumnReference(get_called_class()), $condition);
+		return new JoinStatement(new ColumnReference(get_called_class()), $condition);
 	}
 	
 	public static function IsA($obj, $check_string = FALSE)
@@ -164,16 +259,72 @@ abstract class DomainObject {
 		return $obj !== NULL && is_a($obj, get_called_class());
 	}
 	
-	public function Load()
+	public function RenderForm($type = null)
 	{
-		
+		$xml = '<form controller="'.Samara_ToUnderscoreCase(get_class($this)).'" action="save'.($type === null ? '' : '-'.$type).'" id="save'.($type === null ? '' : '-'.$type).'" title="Save"'.($type === null ? '' : ' type="'.$type.'"').'>';
+		foreach ($this->GetProperties() as $property)
+		{
+			$xml .= $property->RenderInput();
+		}
+		$xml .= '</form>';
+		return $xml;
 	}
 	
-	public function LoadByID()
+	public function Render($form_view = false)
 	{
-		
+		$xml = '<object type="'.Samara_ToUnderscoreCase(get_class($this)).'" display-name="'.((string)$this).'" id="'.$this->ID->Value.'">';
+		//if (!$form_view)
+		//{
+			foreach ($this->GetProperties() as $property)
+			{
+				$xml .= $property->Render($form_view);
+			}
+		//}
+		$xml .= '</object>';
+		return $xml;
 	}
 	
-	//public function 
+	public function PropertyOfType($type)
+	{
+		//$type = Samara_GetFullClassName($type);
+		foreach ($this->GetProperties() as $property)
+		{
+			if (is_a($property, $type))
+			{
+				return $property;
+			}
+		}
+		return null;
+	}
+	
+	public function __toString()
+	{
+		$property = $this->PropertyOfType('Title');
+		if ($property)
+		{
+			return $property->Value ?: '';
+		}
+		return get_class($this).' '.($this->ID->Value ?: '(new)');
+	}
+	
+	public function SetFromFormResult($prefix = null, $suffix = null)
+	{
+		foreach ($this->GetProperties() as $property)
+		{
+			$property_name = $property->Name;
+			if ($this->$property_name->SetFromFormResult($prefix, $suffix) === false)
+			{
+				//echo get_class($this).' property: '.$property_name."\n";
+				return false;
+			}
+		}
+	}
 	
 }
+
+Samara_Include('DataObject', 'inc');
+Samara_Include('ColumnReference', 'inc/queries');
+Samara_Include('JoinStatement', 'inc/queries');
+Samara_Include('InsertQuery', 'inc/queries');
+Samara_Include('UpdateQuery', 'inc/queries');
+Samara_Include('Identifier', 'inc/data_types');

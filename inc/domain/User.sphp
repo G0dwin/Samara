@@ -1,0 +1,30 @@
+<?php
+
+Samara_Include('UserName', 'inc/data_types');
+Samara_Include('Password', 'inc/data_types');
+Samara_Include('DomainObject', 'inc');
+
+class User extends DomainObject
+{
+	
+	public function __construct($name = null, $password = null)
+	{
+		parent::__construct();
+		if ($name)
+		{
+			$this->Name = $name;
+		}
+		if ($password)
+		{
+			$this->Password = $password;
+		}
+	}
+	
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new UserName('Name'));
+		$this->AddProperty(new Password('Password'));
+	}
+	
+}

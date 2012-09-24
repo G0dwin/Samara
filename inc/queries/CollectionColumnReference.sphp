@@ -1,0 +1,27 @@
+<?php
+
+Samara_Include('ColumnReference', 'inc/queries');
+
+class CollectionColumnReference extends ColumnReference
+{
+	
+	protected $collection;
+	
+	public function __construct($collection, $domain_type = null, $alias = null)
+	{
+		parent::__construct($domain_type, $domain_type ? (DataObject::IsA($domain_type) ? $domain_type : new Reference($domain_type)) : null, $alias);
+		$this->collection = $collection;
+	}
+	
+	public function On(ComparisonOperator $condition = NULL)
+	{
+		return new JoinStatement($this, $condition);
+	}
+	
+	public function GetTable($internal_column = 0)
+	{
+		return $this->collection->GetTableName();
+	}
+
+}
+

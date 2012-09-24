@@ -1,4 +1,6 @@
-<?php abstract class QueryPart
+<?php 
+
+abstract class QueryPart extends SamaraBase
 {
 
 	abstract function Compile();//$table_name_is_required = TRUE);

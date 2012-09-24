@@ -1,21 +1,35 @@
 <?php
 
+define('SAMARA_TEST',	0x1);	// For unit testing: least secure, uses eval()
+define('SAMARA_DEV',	0x2);	// For development: always recompiles cache
+define('SAMARA_PROD',	0x3);	// For production: comiples when out of date
+
+define('SAMARA_ROOT', dirname(__DIR__).'/');
+define('SAMARA_BUILD', SAMARA_TEST);
+
 require_once 'PHPUnit\Framework\TestCase.php';
 require_once '\settings.php';
 require_once '\inc\include.php';
 require_once '\inc\modules.php';
 
-/**
- * test case.
- */
+$samara_test_id = 0;
+
 abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 {
 	
-	public $namespace;
+	//public $namespace;
 	public $class_under_test;
 	public $file_location;
 	public $always_include;
 	public $reset_modules;
+	public $class_cache_dir;
+	
+	protected function prepareTemplate(Text_Template $template)
+	{
+		//use custom process-isolation template
+		$template->setFile('/Tests/Samara_TestCase.tpl');
+		//$template->setVar(array('bootstrap' => '/Test/testBootstrap.php'));
+	}
 
 	/**
 	 * Prepares the environment before running a test.
@@ -23,14 +37,30 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	protected function setUp()
 	{
 		parent::setUp();
-		global $samara_include_method, $samara_modules, $samara_namespace;
-		$samara_include_method = SAMARA_TEST;
+
+		define('SAMARA_CACHE_DIR', __DIR__.'/class_cache/'.get_class($this).'/'.$this->getName().'/');
+		
+		if (!is_dir(dirname(SAMARA_CACHE_DIR)))
+		{
+			mkdir(dirname(SAMARA_CACHE_DIR));
+		}
+		if (!is_dir(SAMARA_CACHE_DIR))
+		{
+			mkdir(SAMARA_CACHE_DIR);
+		}
+		
+		global $samara_test_id;
+		define('SAMARA_PREFIX', 'S'.$samara_test_id++.'_');
+		
+		//global $samara_include_method, $samara_modules;//, $samara_namespace;
+		global $samara_modules;//, $samara_namespace;
+		//$samara_include_method = SAMARA_TEST;
 		if ($this->reset_modules !== FALSE)
 		{
 			$samara_modules = array();
 		}
-		$samara_namespace = $this->getName().__CLASS__;
-		$this->namespace = $samara_namespace;
+		//$samara_namespace = $this->getName().__CLASS__;
+		//$this->namespace = $samara_namespace;
 		if ($this->always_include)
 		{
 			Samara_Include($this->class_under_test, $this->file_location);
@@ -62,12 +92,14 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	
 	protected function GetClass($class = NULL)
 	{
-		return $this->namespace.'\\'.($class ?: $this->class_under_test);
+		//return $this->namespace.'\\'.($class ?: $this->class_under_test);
+		global $samara_test_id;
+		return SAMARA_PREFIX.($class ?: $this->class_under_test);
 	}
 	
 	protected function NewTestObject()
 	{
-		return $this->Create($this->class_under_test, func_get_args() ?: array());
+		return $this->Create($this->GetClass(), func_get_args() ?: array());
 	}
 
 	/**
@@ -75,7 +107,7 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	 */
 	protected function tearDown()
 	{
-		parent::tearDown ();
+		parent::tearDown();
 	}
 
 	/**
@@ -86,6 +118,12 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 		$this->class_under_test = preg_replace('/^(.*\\\\)?(.*)(Test)$/', '$2', get_called_class());
 		$this->file_location = 'inc';
 		$this->always_include = true;
+		//$this->class_cache_dir = __DIR__.'/class_cache/'.get_class($this).'/';
+		//if (!is_dir($this->class_cache_dir))
+		//{
+		//	mkdir($this->class_cache_dir);
+		//}
+		//throw new Exception(class_exists('Database') ? 'TRUE' : 'FALSE');
 	}
 	
 	protected function assertXmlEqual(SimpleXMLElement $xml1, SimpleXMLElement $xml2)

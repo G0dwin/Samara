@@ -1,4 +1,8 @@
-<?php class Theme
+<?php 
+
+//use XSLTProcessor, SimpleXMLElement;
+
+class Theme extends SamaraBase
 {
 
 	protected static $instance;
@@ -6,6 +10,7 @@
 	protected $last_controller;
 	protected $last_params;
 	protected $css_files;
+	protected $page_template;
 	
 	protected function __construct()
 	{
@@ -22,7 +27,36 @@
 		global $samara_theme;
 		$theme = $samara_theme.'Theme';
 		Samara_Include($theme, 'themes/'.Samara_ToUnderscoreCase($samara_theme));
+		//$theme = Samara_GetFullClassName($theme);
 		return Theme::$instance ?: (Theme::$instance = new $theme());
+	}
+	
+	protected function ProcessMenus($menus)
+	{
+		$positions = $this->GetMenuPositions();
+		foreach ($menus as $menu)
+		{
+			$name = $menu->GetName();
+			if (isset($positions[$name]))
+			{
+				$menu->SetAttribute('position', $positions[$name]);
+			}
+		}
+	}
+	
+	protected function SetPageTemplate($xml)
+	{
+		$this->page_template = $xml;
+	}
+	
+	protected function SetPageTemplateFile($xml_file)
+	{
+		$this->page_template = $this->GetXmlContents($xml_file);
+	}
+	
+	protected function GetMenuPositions()
+	{
+		return array('primary' => 'header-bottom', 'secondary' => 'sidebar-left', 'admin' => 'header-top');
 	}
 	
 	protected function getCurrentView()
@@ -59,14 +93,13 @@
 	}
 	
 	protected function addXmlHeader($xml)
-	{
+	{		
 		return '<?xml version="1.0" encoding="ISO-8859-1"?>'.$xml;
 	}
 	
 	protected function addXslHeader($xsl)
 	{
-		return $this->addXmlHeader('<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="html" encoding="utf-8" indent="yes" />'.$xsl.'</xsl:stylesheet>');
-		//return $this->addXmlHeader('<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="html" version="5.0" encoding="iso-8859-1" indent="yes" />'.$xsl.'</xsl:stylesheet>');
+		return $this->addXmlHeader($xsl);//$this->addXmlHeader('<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="html" encoding="utf-8" indent="yes" />'.$xsl.'</xsl:stylesheet>');
 	}
 	
 	protected function RenderComponent($name)
@@ -74,9 +107,13 @@
 		switch ($name)
 		{
 			case 'page':
-				$filename = $this->getFile(($this->last_controller ? $this->last_controller.'/' : '').$this->last_view_name.'.view', SAMARA_ROOT.'/composition/views');
+				$filename = $this->getFile(($this->last_controller ? $this->last_controller.'/' : '').$this->last_view_name.'.view', SAMARA_ROOT.'/inc/views');
 				if (!file_exists($filename))
 				{
+					if ($this->page_template)
+					{
+						return $this->compilePHPTags($this->page_template);
+					}
 					return $this->Get404View();
 				}
 				return $this->GetXmlContents($filename, $this->last_params);
@@ -89,8 +126,31 @@
 					return '<css-file>'.implode('</css-file><css-file>', $files).'</css-file>';
 				}
 				return '';
+			case 'js-files':
+				$files = $this->getJSFiles();
+				if (count($files) > 0)
+				{
+					return '<js-file>'.implode('</js-file><js-file>', $files).'</js-file>';
+				}
+				return '';
+			case 'app-icon':
+				return '<app-icon>'.($this->getFile('logo-small.png') ?: $this->getFile('logo.png')).'</app-icon>';
 			case 'components':
 				return Controller::GetComponents();
+			case 'menus':
+				return MenuController::GetMenus();
+		/*$controllers = Controller::GetControllerList();
+		
+		foreach ($controllers as $controller)
+		{
+			$controller = Samara_GetFullClassName($controller);
+			print($controller);
+			print(' : ');
+			echo '-'.$controller::ControllerName().'-';
+			print('<br />');
+		}
+		die();
+				break;*/
 		}
 	}
 	
@@ -125,7 +185,7 @@
 	function GetXslContents($filename, $params = NULL)
 	{
 		$contents = FALSE;
-		if (is_array($filename))
+		/*if (is_array($filename))
 		{
 			$contents = '';
 			foreach ($filename as $file)
@@ -134,9 +194,9 @@
 			}
 		}
 		else
-		{
-			$contents = $this->GetXmlContents($filename, $params, '');
-		}
+		{*/
+		$contents = $this->GetXmlContents($filename, $params, '');
+		//}
 		if ($contents !== FALSE)
 		{
 			$contents = $this->addXslHeader($contents);
@@ -156,11 +216,8 @@
 		$dirs = $this->getDirs();
 		$files = array();
 		$filename = ($layout === NULL ? 'default' : $layout).'.layout';
-		foreach ($dirs as $dir)
-		{
-			$files[] = $this->getFile($filename);
-		}
-		$xsl = $this->GetXslContents(array_reverse($files));
+		$xsl = $this->GetXslContents($this->getFile($filename));
+		
 		$xslt->importStylesheet(new SimpleXMLElement($xsl));
 		$x = $xslt->transformToXml(new SimpleXMLElement($xml));
 		
@@ -184,7 +241,7 @@
 	{
 		$filename = NULL;
 		$dirs = $this->getDirs();
-		//print_r($dirs);print '<br />';
+
 		while ($dirs)
 		{
 			$filename = array_shift($dirs).'/'.$name;
@@ -205,7 +262,7 @@
 	
 	protected function getCSSFiles()
 	{
-		if (get_parent_class() !== false)
+		if (Theme::IsA(get_parent_class()))
 		{
 			$files = parent::getCSSFiles();
 		}
@@ -214,6 +271,24 @@
 			$files = array();
 		}
 		$filename = $this->GetThemeDir().'/'.Samara_ToUnderscoreCase($this->GetThemeName()).'.css';
+		if (file_exists(SAMARA_ROOT.$filename))
+		{
+			$files[] = '/'.$filename;
+		}
+		return $files;
+	}
+	
+	protected function getJSFiles()
+	{
+		if (Theme::IsA(get_parent_class()))
+		{
+			$files = parent::getJSFiles();
+		}
+		else
+		{
+			$files = array();
+		}
+		$filename = $this->GetThemeDir().'/'.Samara_ToUnderscoreCase($this->GetThemeName()).'.js';
 		if (file_exists(SAMARA_ROOT.$filename))
 		{
 			$files[] = '/'.$filename;
@@ -243,3 +318,5 @@
 	}
 	
 }
+
+Samara_Include('MenuController', 'inc/controllers');

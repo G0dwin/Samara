@@ -1,0 +1,25 @@
+<?php
+
+Samara_Include('DomainObject', 'inc');
+Samara_Include('Hyperlink', 'inc/data_types');
+
+class MenuItem extends DomainObject
+{
+	
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new Title('Name'));
+		$this->AddProperty(new Hyperlink('Link'));
+	}
+	
+	public function Render($form_view = true)
+	{
+		if ($form_view)
+		{
+			return parent::Render(true);
+		}
+		return '<link action="'.$this->Link->Value.'" title="'.$this->Name->Value.'">'.$this->Name->Value.'</link>';
+	}
+	
+}

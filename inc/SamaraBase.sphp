@@ -1,0 +1,10 @@
+<?php
+
+abstract class SamaraBase
+{
+	public static function IsA($obj)
+	{
+		return is_a($obj, get_called_class());
+	}
+}
+

@@ -1,4 +1,6 @@
-<?php Samara_Include('Query', 'inc/queries');
+<?php 
+
+Samara_Include('Query', 'inc/queries');
 Samara_Include('Database', 'inc');
 
 class Insert extends Query
@@ -8,6 +10,12 @@ class Insert extends Query
 	public function __construct()
 	{
 		$this->values = func_get_args();
+	}
+	
+	public function AddColumns()
+	{
+		$this->values = array_merge($this->values ?: array(), func_get_args());
+		return $this;
 	}
 	
 	public function Compile()

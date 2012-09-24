@@ -1,0 +1,25 @@
+<?php
+
+Samara_Include('UpdateQuery', 'inc/queries');
+Samara_Include('ColumnReference', 'inc/queries');
+
+class DeleteQuery extends UpdateQuery
+{
+	protected $type;
+	
+	public function __construct($type)
+	{
+		if (is_string($type))
+		{
+			$type = new $type();
+		}
+		$this->type = new ColumnReference($type);
+	}
+	
+	function CompileHead()
+	{
+		return 'DELETE FROM '.Database::FormatTable($this->type->GetTable());
+	}
+	
+}
+

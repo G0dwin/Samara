@@ -1,4 +1,6 @@
-<?php Samara_Include('Query', 'inc/queries');
+<?php 
+
+Samara_Include('Query', 'inc/queries');
 Samara_Include('SelectQuery', 'inc/queries');
 
 class Update extends Query
@@ -13,16 +15,17 @@ class Update extends Query
 		$this->values = func_get_args();
 	}
 	
+	public function AddColumns()
+	{
+		$this->values = array_merge($this->values ?: array(), func_get_args());
+		return $this;
+	}
+	
 	public function Compile()
 	{
-		$columns = NULL;
 		$where = NULL;
 		$order_by = NULL;
 		$limit = NULL;
-		foreach ($this->values AS $column)
-		{
-			$columns = ($columns === NULL ? '' : $columns.', ').Database::FormatSetExpression($column->GetColumn(), $column->GetSetValue());
-		}
 	 	
 	 	if ($this->where)
  		{
@@ -63,7 +66,22 @@ class Update extends Query
  			$limit = ' LIMIT '.$this->limit;
  		}
  		
-		return Database::CompleteQuery('UPDATE '.Database::FormatTable($this->values[0]->GetTable()).' SET '.$columns.($where ?: '').($order_by ?: '').($limit ?: ''));		
+		return Database::CompleteQuery($this->CompileHead().($where ?: '').($order_by ?: '').($limit ?: ''));		
+	}
+	
+	function CompileHead()
+	{
+		$columns = NULL;
+		foreach ($this->values AS $column)
+		{
+			/*if (!is_object($column))
+			{
+				print_r($column);
+				die('['.$column.']');
+			}*/
+			$columns = ($columns === NULL ? '' : $columns.', ').Database::FormatSetExpression($column->GetColumn(), $column->GetSetValue());
+		}
+		return 'UPDATE '.Database::FormatTable($this->values[0]->GetTable()).' SET '.$columns;
 	}
 	
 	public function Where()

@@ -1,4 +1,6 @@
-<?php Samara_Include('QueryPart', 'inc/queries');
+<?php 
+
+Samara_Include('QueryPart', 'inc/queries');
 Samara_Include('ColumnReference', 'inc/queries');
 Samara_Include('DataObject', 'inc');
 

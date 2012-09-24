@@ -1,4 +1,17 @@
-	<xsl:template match="view">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:import href="themes/basic/page.layout" />
+	<xsl:import href="themes/basic/forms.layout" />
+	<xsl:import href="themes/basic/object.layout" />
+	<xsl:import href="themes/basic/text.layout" />
+	
+	<xsl:output method="html" encoding="utf-8" indent="yes" />
+	
+	<xsl:variable name="controller" select="view/@controller" />
+	<xsl:variable name="action" select="view/@action" />
+
+	<xsl:template name="view">
+
 		<xsl:text disable-output-escaping="yes">&lt;!doctype html>&#10;</xsl:text>
 		
 		<html lang="en">
@@ -11,12 +24,19 @@
 				<xsl:for-each select="css-file">
 					<link rel="stylesheet" type="text/css"><xsl:attribute name="href"><xsl:apply-templates /></xsl:attribute></link>
 				</xsl:for-each>
+
+				<xsl:for-each select="js-file">
+					<script><xsl:attribute name="src"><xsl:apply-templates /></xsl:attribute></script>
+				</xsl:for-each>
+
+				<link rel="icon" type="image/png"><xsl:attribute name="href">/<xsl:apply-templates select="app-icon" /></xsl:attribute></link>
 				
 				<xsl:text disable-output-escaping="yes">
 					&lt;!--[if lt IE 9]&gt;
 						&lt;script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"&gt;&lt;/script&gt;
 					&lt;![endif]--&gt;
 				</xsl:text>
+				
 			</head>
 			<body>
 				<xsl:apply-templates select="view-header" />
@@ -24,28 +44,6 @@
 				<xsl:apply-templates select="view-footer" />
 			</body>
 		</html>
-	</xsl:template>
-	
-	<xsl:template match="page">
-		<div id="content">
-			<h2><xsl:value-of select="@title" /></h2>
-			<xsl:apply-templates />
-			<footer></footer>
-		</div>
-	</xsl:template>
-
-	<xsl:template match="text[@type='paragraph']">
-		<p class="paragraph first-paragraph">
-		<xsl:processing-instruction name="php">
-			echo preg_replace('/^(\s*)(\w+)/', '&lt;span class="first-word"&gt;$2&lt;/span&gt;', preg_replace('/(\n\s*\n\s*)(\w+)/', '&lt;/p&gt;&lt;p class="paragraph"&gt;&lt;span class="first-word"&gt;$2&lt;/span&gt;', '<xsl:value-of select="." />'));
-		?</xsl:processing-instruction>
-		</p>
-	</xsl:template>
-
-	<xsl:template match="paragraph">
-		<p>
-			<xsl:apply-templates />
-		</p>
 	</xsl:template>
 	
 	<xsl:template match="paragraph/paragraph">
@@ -56,9 +54,7 @@
 	
 	<xsl:template match="component">
 		<div class="component">
-			<xsl:attribute name="id">
-    			<xsl:value-of select="@id"/>
-  			</xsl:attribute>
+			<xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
   			<h2><xsl:value-of select="title" /></h2>
   			<div class="component-inner">
 				<xsl:apply-templates />
@@ -75,14 +71,24 @@
 	<xsl:template match="view-header">
 		<header>
 			<div class="header-content">
+				<xsl:apply-templates select="//menu[@position='header-top']" />
+				<xsl:apply-templates select="//component[@position='header-top']" />
 				<xsl:apply-templates />
+				<xsl:apply-templates select="//menu[@position='header-bottom']" />
+				<xsl:apply-templates select="//component[@position='header-bottom']" />
 			</div>
 		</header>
 	</xsl:template>
 
 	<xsl:template match="view-footer">
 		<footer>
-			<xsl:apply-templates />
+			<div class="footer-content">
+				<xsl:apply-templates select="//menu[@position='footer-top']" />
+				<xsl:apply-templates select="//component[@position='footer-top']" />
+				<xsl:apply-templates />
+				<xsl:apply-templates select="//menu[@position='footer-bottom']" />
+				<xsl:apply-templates select="//component[@position='footer-bottom']" />
+			</div>
 		</footer>
 	</xsl:template>
 	
@@ -94,31 +100,60 @@
 		<h2><xsl:apply-templates /></h2>
 	</xsl:template>
 	
+	<xsl:template name="menu-items">
+		<xsl:attribute name="id"><xsl:value-of select="@name"/>-menu</xsl:attribute>
+		<xsl:for-each select="*">
+		<li>
+			<xsl:apply-templates select="." />
+		</li>
+		</xsl:for-each>
+	</xsl:template>
+	
 	<xsl:template match="menu">
-		<nav>
-			<xsl:attribute name="class">
-    			<xsl:value-of select="@name"/>
-  			</xsl:attribute>
-			<xsl:apply-templates />
-		</nav>
+		<ul class="menu">
+			<xsl:call-template name="menu-items"></xsl:call-template>
+		</ul>
+	</xsl:template>
+
+	<xsl:template match="page//menu">
+		<div class="menu-container">
+			<h3><xsl:value-of select="@name" /></h3>
+			<ul class="menu">
+				<xsl:call-template name="menu-items"></xsl:call-template>
+			</ul>
+		</div>
 	</xsl:template>
 
 	<xsl:template match="view-body">
 		<div id="body-wrapper">
 			<div id="body">
+				<xsl:apply-templates select="//menu[@position='body-top']" />
+				<xsl:apply-templates select="//component[@position='body-top']" />
 				<xsl:apply-templates select="sidebar" />
 				<xsl:apply-templates select="page" />
+				<xsl:apply-templates select="//menu[@position='body-bottom']" />
+				<xsl:apply-templates select="//component[@position='body-bottom']" />
 			</div>
 		</div>
 	</xsl:template>
 
 	<xsl:template match="sidebar">
-		<div class="sidebar">
+		<aside class="sidebar">
 			<xsl:attribute name="id">sidebar-<xsl:value-of select="@position"/></xsl:attribute>
 			<xsl:variable name="position" select="concat(@position, '-sidebar')" />
 			<xsl:apply-templates />
+			<xsl:apply-templates select="//menu[@position=$position]" />
 			<xsl:apply-templates select="//component[@position=$position]" />
-		</div>
+		</aside>
+	</xsl:template>
+	
+	<xsl:template match="link">
+		<a>
+			<xsl:attribute name="href">
+				/<xsl:if test="string-length(@controller) &gt; 0"><xsl:value-of select="@controller" />/</xsl:if><xsl:if test="string-length(@action) &gt; 0"><xsl:value-of select="@action" /></xsl:if>
+			</xsl:attribute>
+			<xsl:apply-templates />
+		</a>
 	</xsl:template>
 	
 	<xsl:template match="logo">
@@ -127,45 +162,79 @@
   		</div>
 	</xsl:template>
 
-	<xsl:template match="form">
-		<form method="post">
-			<xsl:attribute name="action">/<xsl:value-of select="@controller" />/<xsl:value-of select="@action" /></xsl:attribute>
-			<xsl:attribute name="id"><xsl:value-of select="@id" />-form</xsl:attribute>
-			<xsl:apply-templates />
-			<input type="submit"><xsl:attribute name="value"><xsl:value-of select="@title" /></xsl:attribute></input>
-		</form>
-	</xsl:template>
-	
-	<xsl:template match="form//control">
-		<xsl:choose>
-			<xsl:when test="@type='text'">
-				<label>
-					<xsl:attribute name="for"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:value-of select="@label" />:
-				</label>
-				<input type="text">
-					<xsl:attribute name="id"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:attribute name="name"><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:attribute name="value"><xsl:value-of select="@value" /></xsl:attribute>
-					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
-				</input>
-			</xsl:when>
-			<xsl:when test="@type='password'">
-				<label>
-					<xsl:attribute name="for"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:value-of select="@label" />:
-				</label>
-				<input type="password">
-					<xsl:attribute name="id"><xsl:value-of select="concat(ancestor::form/@id, '-')" /><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:attribute name="name"><xsl:value-of select="@param" /></xsl:attribute>
-					<xsl:attribute name="value"><xsl:value-of select="@value" /></xsl:attribute>
-					<xsl:attribute name="class"><xsl:value-of select="@class" /></xsl:attribute>
-				</input>
-			</xsl:when>
-			<xsl:otherwise>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:template>
-	
 	<xsl:template match="component/title"></xsl:template>
 	
+	<xsl:template match="extension-info">
+		<table class="extension-info">
+			<thead>
+				<tr>
+					<th class="hidden"></th>
+					<th class="name">Name</th>
+					<th class="description">Description</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+			<xsl:for-each select="extension-list[@type='installed']/extension">
+				<xsl:variable name="name" select="@name" />
+				<xsl:if test="not(//extension-list[@type='available']/extension/@name=$name)">
+				<tr class="updated new">
+					<td class="hidden"></td>
+					<td class="name"><xsl:value-of select="@title" /></td>
+					<td class="description"><xsl:value-of select="." /></td>
+					<td class="actions">
+						<a href=""><img src="/themes/basic/earth.png" /></a>
+					</td>
+				</tr>
+				</xsl:if>
+			</xsl:for-each>
+			<xsl:for-each select="extension-list[@type='available']/extension">
+				<xsl:variable name="name" select="@name" />
+				<xsl:variable name="time1" select="@last-updated" />
+				<tr>
+					<xsl:if test="//extension-list[@type='installed']/extension/@name=$name">
+						<xsl:attribute name="class">installed</xsl:attribute>
+						<xsl:variable name="time2" select="//extension-list[@type='installed']/extension[@name=$name]/@last-updated" />
+						<xsl:if test="$time2 &lt; $time1">
+							<xsl:attribute name="class">outdated</xsl:attribute>
+						</xsl:if>
+						<xsl:if test="$time2 &gt; $time1">
+							<xsl:attribute name="class">updated</xsl:attribute>
+						</xsl:if>
+					</xsl:if>
+					<td class="hidden"></td>
+					<td class="name"><xsl:value-of select="@title" /></td>
+					<td class="description"><xsl:value-of select="." /></td>
+					<td class="actions">
+						<xsl:choose>
+							<xsl:when test="//extension-list[@type='installed']/extension/@name=$name">
+								<xsl:variable name="time2" select="//extension-list[@type='installed']/extension[@name=$name]/@last-updated" />
+								<xsl:if test="$time2 &lt; $time1">
+									<a href=""><img src="/themes/basic/refresh.png" /></a>
+								</xsl:if>
+								<xsl:if test="$time2 &gt; $time1">
+									<a href=""><img src="/themes/basic/earth.png" /></a>
+								</xsl:if>
+								<a href=""><img src="/themes/basic/configuration.png" /></a>
+								<a><xsl:attribute name="href">/admin/extensions/remove/<xsl:value-of select="@name" /></xsl:attribute><img src="/themes/basic/remove.png" /></a>
+							</xsl:when>
+							<xsl:otherwise>
+								<a><xsl:attribute name="href">/admin/extensions/add/<xsl:value-of select="@name" /></xsl:attribute><img src="/themes/basic/add.png" /></a>
+							</xsl:otherwise>
+						</xsl:choose>
+					</td>
+				</tr>
+			</xsl:for-each>
+			</tbody>
+			<tfoot>
+				<tr>
+					<th class="hidden"></th>
+					<th class="name"></th>
+					<th class="description"></th>
+					<th class="actions"></th>
+				</tr>
+			</tfoot>
+		</table>
+	</xsl:template>
+	
+</xsl:stylesheet>

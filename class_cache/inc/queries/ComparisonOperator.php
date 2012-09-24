@@ -1,4 +1,6 @@
-<?php Samara_Include('Operator', 'inc/queries');
+<?php 
+
+Samara_Include('Operator', 'inc/queries');
 Samara_Include('LogicalOperator', 'inc/queries');
 
 class ComparisonOperator extends Operator

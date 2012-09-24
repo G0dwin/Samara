@@ -1,0 +1,17 @@
+<?php
+
+Samara_Include('Integer', 'inc/data_types');
+
+class Boolean extends Integer
+{
+	public function GetNativeType()
+	{
+		return 'TINYINT';
+	}
+	
+	public function GetSize()
+	{
+		return 1;
+	}
+	
+}

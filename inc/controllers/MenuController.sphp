@@ -1,0 +1,57 @@
+<?php
+
+Samara_Include('DomainObjectController', 'inc');
+Samara_Include('Menu', 'inc/domain');
+
+class MenuController extends DomainObjectController
+{
+	protected $menus;
+	
+	protected function GetMenus()
+	{
+		$this->menus = array();
+		
+		$controllers = $this->GetControllerList();
+		
+		foreach ($controllers as $controller)
+		{
+			//$controller = $controller;
+			$c = Controller::getInstanceOf($controller);
+			if (method_exists($c, 'processMenu'))
+			{
+				$c->processMenu();
+			}
+		}
+		
+		Theme::ProcessMenus($this->menus);
+		
+		$xml = '';
+		foreach ($this->menus as $key => $menu)
+		{
+			$xml .= $menu->Render();
+		}
+		return $xml;
+	}
+	
+	protected function GetMenu($name)
+	{
+		if (isset($this->menus[$name]))
+		{
+			return $this->menus[$name];
+		}
+		$this->menus[$name] = new Menu($name);
+		
+		return $this->menus[$name];
+	}
+	
+	protected function processMenu()
+	{
+		/*$this->GetMenu('primary')->
+			AddItem('About', 'about'))->
+			AddItem('Documentation'))->
+			AddItem('Community')->
+			AddItem('Downloads');*/
+	}
+	
+}
+

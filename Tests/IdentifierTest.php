@@ -8,7 +8,7 @@ class IdentifierTest extends Samara_TestCase
 	public function __construct()
 	{
 		parent::__construct();
-		$this->file_location .= '/primitive_types';
+		$this->file_location .= '/data_types';
 	}
 	
 	/*
@@ -35,7 +35,7 @@ class IdentifierTest extends Samara_TestCase
 		$this->assertEquals('INT(4) UNSIGNED', $fullName, "'$fullName' <> 'INT(4) UNSIGNED'");
 		
 		$createString = '`id` INT(4) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT';
-		$actual = $i->CompileForCreate();
+		$actual = $i->CompileForCreate(null);
 		$this->assertEquals($createString, $actual, "$actual <> $createString");
 	}
 
@@ -60,7 +60,7 @@ class IdentifierTest extends Samara_TestCase
 		$this->assertEquals('INT(4) UNSIGNED', $fullName, "'$fullName' <> 'INT(4) UNSIGNED'");
 		
 		$createString = '`id` INT(4) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT';
-		$actual = $i->CompileForCreate();
+		$actual = $i->CompileForCreate(null);
 		$this->assertEquals($createString, $actual, "$actual <> $createString");
 	}
 	
@@ -123,7 +123,7 @@ class IdentifierTest extends Samara_TestCase
 							'Default' => null,
 							'Extra' => 'auto_increment'
 						), TRUE),
-					array(
+					/*array(
 						array(
 							'Field' => 'id',
 							'Type' => 'int(4) unsigned',
@@ -131,7 +131,7 @@ class IdentifierTest extends Samara_TestCase
 							'Key' => 'PRI',
 							'Default' => 0,
 							'Extra' => 'auto_increment'
-						), TRUE),
+						), TRUE),*/
 		);
 		foreach ($tests AS $test)
 		{

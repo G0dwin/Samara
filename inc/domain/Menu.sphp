@@ -1,0 +1,94 @@
+<?php
+
+Samara_Include('Link', 'inc');
+Samara_Include('DomainObject', 'inc');
+Samara_Include('Title', 'inc/data_types');
+Samara_Include('Collection', 'inc/data_types');
+Samara_Include('WeightedCollection', 'inc/data_types');
+Samara_Include('Reference', 'inc/data_types');
+
+//echo 'POOP!'."\n";
+
+class Menu extends DomainObject {
+	
+	protected $items;
+	//protected $name;
+	protected $attributes;
+	
+	public function __construct($name = null)
+	{
+		parent::__construct();
+		$this->Name->Value = $name;
+		$this->attributes = array();
+	}
+	
+	protected function Properties()
+	{
+		parent::Properties();
+		$this->AddProperty(new Title('Name'));
+		$this->AddProperty(new WeightedCollection('MenuItem', $this))->MakeNullable();
+		$this->AddProperty(new Reference('Menu', 'Parent'))->MakeNullable();
+		$this->AddProperty(new String('Position', 32));
+		$this->AddProperty(new Collection('Attribute', $this));
+	}
+	
+	public function AddItem($name, $url)
+	{
+		/*if (!$this->items)
+		{
+			$this->items = array();
+		}
+		$this->items[] = $link;*/
+		$item = new MenuItem();
+		$item->Name = $name;
+		$item->Link = $url;
+		$this->MenuItem->Add($item);
+		return $this;
+	}
+	
+	public function Render($default = false)
+	{
+		if ($default)
+		{
+			return parent::Render(true);
+		}
+		$xml = '<menu name="'.$this->Name->Value.'"';
+		foreach ($this->Attribute->Value as $attribute)
+		{
+			$xml .= ' '.$attribute->Name->Value.'="'.$attribute->Value->Value.'"';
+		}
+		if ($this->Position->Value)
+		{
+			$xml .= ' position="'.$this->Position->Value.'"';
+		}
+		$xml .= '>';
+		if ($this->MenuItem)
+		{
+			foreach ($this->MenuItem->Value as $item)
+			{
+				$xml .= $item->Render(false);
+			}
+		}
+		$xml .= '</menu>';
+		return $xml;
+	}
+	
+	public function SetAttribute($name, $value)
+	{
+		//$this->attributes[$name] = $value;
+		foreach ($this->Attribute as $attribute)
+		{
+			if ($attribute->Name == $name)
+			{
+				$attribute->Value = $value;
+			}
+		}
+		$this->Attribute->Add(new Attribute($name, $value));
+	}
+	
+	public function GetName()
+	{
+		return $this->Name->Value;
+	}
+	
+}

@@ -1,0 +1,9 @@
+<?php
+
+Samara_Include('Title', 'inc/data_types');
+
+class UserName extends Title
+{
+	
+}
+

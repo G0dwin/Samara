@@ -1,11 +1,12 @@
 <?php
 
-Samara_Include('Theme', 'inc');
+Samara_Include('SamaraBase', 'inc');
 
-class Controller
+class Controller extends SamaraBase
 {
 
 	protected static $current_instance;
+	protected static $all_instances;
 	protected $params;
 	
 	protected function __construct()
@@ -21,34 +22,92 @@ class Controller
 		}
 	}
 	
+	public function __call($name, $args)
+	{
+		$class = get_class($this);
+		$trace = debug_backtrace();
+		
+		//if (isset($trace[2]) && is_a($trace[2]['class'], Samara_GetFullClassName('Controller'), true))
+		if (isset($trace[2]) && is_a($trace[2]['class'], 'Controller', true))
+		{
+			if (method_exists($this, $name))
+			{
+				return call_user_func_array(array($this, $name), $args);
+			}
+			if (preg_match('/^canAccess(.+)$/', $name, $matches))
+			{
+				return true;
+			}
+			return null;
+		}
+		throw new \Exception("The method $class::$name does not exist");
+	}
+	
+	protected static function getInstanceOf($name)
+	{
+		//$name = Samara_GetFullClassName($name);
+		if (isset(Controller::$all_instances[$name]))
+		{
+			return Controller::$all_instances[$name];
+		}
+		return (Controller::$all_instances[$name] = new $name());
+	}
+	
 	public static function __callStatic($name, $args)
 	{
 		$called_class = get_called_class();
-		$instance = Controller::GetInstance();
+		$instance = ($called_class == /*Samara_GetClassName('Controller')*/'Controller' ? Controller::GetInstance() : Controller::getInstanceOf($called_class));
 		$exists = method_exists($instance, $name);
 		$class = get_class($instance);
-		if ($exists && $name[0] >= 'A' && $name[0] <= 'Z')
+		
+		//$trace = debug_backtrace();
+		$internal = false;
+		/*if (isset($trace[1]) && is_a($trace[1]['class'], 'Controller'))
 		{
-			return call_user_func_array(array($called_class == Samara_GetClassName('Controller') ? $instance : new $called_class(), $name), $args);
+			$internal = true;
+		}*/
+			
+		if ($exists && ($internal || $name[0] >= 'A' && $name[0] <= 'Z'))
+		{
+			return call_user_func_array(array($instance, $name), $args);
 		}
 		if ($exists)
 		{
 			throw new \Exception("The method $class::$name is not public");
 		}
+		//return $called_class;
 		throw new \Exception("The method $class::$name does not exist");
+	}
+	
+	protected function HasMethod($name)
+	{
+		return method_exists($this, $name);
 	}
 	
 	protected function GetControllerList()
 	{
-		$files = glob(SAMARA_ROOT.$this->GetControllerDir().'/*Controller.sphp');
+		$files = array_merge(glob(SAMARA_ROOT.$this->GetControllerDir().'/*Controller.sphp'), glob(SAMARA_ROOT.'extensions/*/controllers/*Controller.sphp'));
 		$classes = array('Controller');
 		foreach ($files as $file)
 		{
-			$class = preg_replace('/^(.*[\/|\\\\])?([^\/|^\\\\]*)\.sphp$/', '$2', $file);
+			$class = basename($file, '.sphp');
 			$classes[] = $class;
-			Samara_Include($class, $this->GetControllerDir());
+			Samara_Include($class, substr(dirname($file), strlen(SAMARA_ROOT)));
 		}
 		return $classes;
+	}
+	
+	protected function GetLink($name, $action = null, $params = null)
+	{
+		return new Link($name, $this->ControllerName(), $action, $params);
+	}
+	
+	public static function ControllerName()
+	{
+		//return get_class();//($this);
+		//return var_export($this, TRUE);//get_class($this);//
+		//return strtolower(preg_replace('/^(.*)Controller$/', '$1', Samara_GetClassName(get_called_class())));
+		return strtolower(preg_replace('/^(.*)Controller$/', '$1', get_called_class()));
 	}
 	
 	protected function GetComponents()
@@ -56,7 +115,7 @@ class Controller
 		$components = '';
 		foreach ($this->GetControllerList() as $controller)
 		{
-			$c = new $controller();
+			$c = Controller::getInstanceOf($controller);// new $controller();
 			$components .= $c->components();
 		}
 		return $components;
@@ -69,40 +128,58 @@ class Controller
 	
 	protected function GetControllerDir()
 	{
-		return '/composition/controllers';
+		return 'inc/controllers';
 	}
 	
 	protected static function GetInstance()
 	{
-		return Controller::$current_instance ?: (Controller::$current_instance = new Controller());
+		return Controller::$current_instance ?: (Controller::$current_instance = Controller::getInstanceOf('Controller'));
 	}
 	
 	protected function Render()
 	{
 		$params = $this->params = $this->getParams();
 		$controller = $this->GetControllerName();
+		//$class = Samara_GetFullClassName($controller.'Controller');
 		$class = $controller.'Controller';
-		//print $class;
-		if ($controller && Samara_ClassExists($class, 'composition/controllers'))
+		//echo $controller;
+		if ($controller && Samara_ClassExists($class, 'inc/controllers'))
 		{
-			Samara_Include($class, 'composition/controllers');
-			$class = Samara_GetFullClassName($class);
-			Controller::$current_instance = new $class();
+			Samara_Include($class, 'inc/controllers');
+			//$class = Samara_GetFullClassName($class);
+			//$class = $class;
+			Controller::$current_instance = Controller::getInstanceOf($class);
 			Controller::$current_instance->params = $params;
 		}
-		print Controller::$current_instance->CreatePage();
+		echo Controller::GetInstance()->CreatePage();
 	}
 	
 	public function CreatePage()
 	{
 		$page = $this->GetPageName();
-		$method = "render$page";
-		return Theme::Process($this->$method());
+		$canAccess = "canAccess$page";
+		if ($this->$canAccess())
+		{
+			$method = "render$page";
+			$xml = $this->$method();
+			if ($xml)
+			{
+				return Theme::Process($xml);
+			}
+		}
+		//var_export($this); die($canAccess);
+		return Theme::Process(Theme::Get404View());
 	}
 	
 	public function renderIndex()
 	{
 		return Theme::getView();
+	}
+	
+	public function renderAbout()
+	{
+		Samara_Include('ArticleController', 'inc/controllers');
+		return ArticleController::redirect('show', array(1));
 	}
 	
 	protected function GetControllerName()
@@ -122,7 +199,20 @@ class Controller
 	
 	protected function Param($name)
 	{
+		if (is_numeric($name))
+		{
+			return isset($this->params['params'][$name]) ? $this->params['params'][$name] : null;
+		}
 		return isset($this->params[$name]) ? $this->params[$name] : null;
+	}
+	
+	protected function ParamExists($name)
+	{
+		if (is_numeric($name))
+		{
+			return isset($this->params['params'][$name]);
+		}
+		return isset($this->params[$name]);
 	}
 	
 	protected function getParams()
@@ -130,6 +220,12 @@ class Controller
 		$request = preg_split('/[\/|\?]/', trim($_SERVER['REQUEST_URI'], '/'));
 		$params = array('controller' => array_shift($request), 'action' => array_shift($request));
 		$params['params'] = array();
+		if (!Samara_ClassExists(Samara_ToCamelCase($params['controller']).'Controller', 'inc/controllers'))
+		{
+			$params['params'][] = $params['action'];
+			$params['action'] = $params['controller'];
+			$params['controller'] = '';
+		}
 		foreach ($request as $param)
 		{
 			$p = explode('=', $param);
@@ -145,11 +241,16 @@ class Controller
 		$params = array_merge($params, $_GET, $_POST);
 		return $params;
 	}
+
+	protected function fullRedirect($action = NULL, $params = NULL)
+	{
+		header('Location: '.$this->createURL($action, $params));
+	}
 	
 	protected static function redirect($action = NULL, $params = NULL)
 	{
 		$class = get_called_class();
-		$instance = Controller::$current_instance = new $class();
+		$instance = Controller::$current_instance = Controller::getInstanceOf($class);
 		if ($class != get_class(Controller::GetInstance()))
 		{
 			return $instance->redirect($action, $params);
@@ -163,5 +264,25 @@ class Controller
 		return $instance->$render();
 	}
 	
+	protected function createURL($action, $params)
+	{
+		$class = get_class($this);
+		$controller = $class::ControllerName();
+		return '/'.($controller ? $controller.'/' : '').($action ? $action.'/' : '').($params ? implode('/', $params) : '');
+	}
+	
+	protected function errorXML($text)
+	{
+		return '<page title="Error"><text type="paragraph">'.$text.'</text></page>';
+	}
+	
+	protected function createPageXml($name, $contents)
+	{
+		return '<page title="'.$name.'" controller="'.Controller::GetControllerName().'" action="'.Controller::GetAction().'">'.$contents.'</page>';
+	}
+	
 }
+
+Samara_Include('Theme', 'inc');
+Samara_Include('Link', 'inc');
 

@@ -1,0 +1,57 @@
+<?php
+
+Samara_Include('Controller', 'inc');
+
+abstract class DomainObjectController extends Controller
+{
+
+	protected function renderCreate()
+	{
+		$type = $this->getDomainObjectType();
+		$do = new $type();
+		Theme::SetPageTemplate('<page title="Create New '.$type.'">'.$do->RenderForm().'</page>');
+		return Theme::getView();
+	}
+	
+	protected function renderEdit()
+	{
+		$type = $this->getDomainObjectType();
+		$do = $type::Get($this->Param(0));
+		$title = $do->PropertyOfType('Title');
+		Theme::SetPageTemplate('<page title="Edit '.$type.'" sub-title="'.($title === null ? $type : $title->Value).'">'.$do->RenderForm().'</page>');
+		return Theme::getView();
+	}
+	
+	protected function renderSave()
+	{
+		$type = $this->getDomainObjectType();
+		$do = new $type();
+		$do->SetFromFormResult();
+		
+		$new_id = $do->Save();
+		if ($new_id)
+		{
+			$this->fullRedirect('show', array($new_id));
+			return;
+		}
+		
+		Theme::SetPageTemplate($this->errorXML(Database::GetLastError()));
+		return Theme::getView();
+	}
+	
+	protected function renderShow()
+	{
+		$type = $this->getDomainObjectType();
+		$do = $type::Get($this->Param(0));
+		$title = $do->PropertyOfType('Title');
+		Theme::SetPageTemplate('<page title="'.($title === null ? 'View '.$type : $title->Value).'">'.$do->Render().'</page>');
+		return Theme::getView();
+	}
+	
+	protected function getDomainObjectType()
+	{
+		return preg_replace('/^(.*)(Controller)$/', '$1', get_class($this));
+	}
+	
+}
+
