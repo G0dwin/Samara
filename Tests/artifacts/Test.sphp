@@ -1,6 +1,8 @@
 <?php
 
-class Test {
+Samara_Include('SamaraBase', 'inc');
+
+class Test extends SamaraBase {
 	
 	public function Calculate($x, $y)
 	{

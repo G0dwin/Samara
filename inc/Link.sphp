@@ -1,8 +1,9 @@
 <?php
 
+Samara_Include('SamaraBase', 'inc');
 Samara_Include('Renderable', 'inc');
 
-class Link implements Renderable
+class Link extends SamaraBase implements Renderable
 {
 
 	protected $name;
@@ -18,7 +19,7 @@ class Link implements Renderable
 		$this->params = $params;
 	}
 	
-	public function Render()
+	public function Render($view = null)
 	{
 		return '<link controller="'.($this->controller ?: '').'" action="'.($this->action ?: '').'" params="'.($this->params == null ? '' : explode($this->params, ' ')).'">'.$this->name.'</link>';
 	}
@@ -34,4 +35,3 @@ class Link implements Renderable
 	}
 	
 }
-

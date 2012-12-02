@@ -16,6 +16,7 @@ class IdentifierTest extends Samara_TestCase
 	 */
 	public function testConstructorWillTakeZeroArguments()
 	{
+		Samara_Include('Integer', 'inc/data_types');
 		$i = $this->NewTestObject();
 		$this->assertEquals('ID', $i->Name);
 		$this->assertEquals('id', $i->NativeName);

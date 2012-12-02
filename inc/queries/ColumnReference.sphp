@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('QueryPart', 'inc/queries');
-Samara_Include('DataObject', 'inc');
 
 class ColumnReference extends QueryPart
 {
@@ -124,3 +123,4 @@ class ColumnReference extends QueryPart
 Samara_Include('AggreateFunction', 'inc/queries');
 Samara_Include('Operator', 'inc/queries');
 Samara_Include('ComparisonOperator', 'inc/queries');
+Samara_Include('DataObject', 'inc');

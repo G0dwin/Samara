@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('Query', 'inc/queries');
-Samara_Include('Database', 'inc');
 
 class InsertQuery extends Query
 {
@@ -32,3 +31,4 @@ class InsertQuery extends Query
 
 }
 
+Samara_Include('Database', 'inc');

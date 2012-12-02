@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('Collection', 'inc/data_types');
-Samara_Include('Integer', 'inc/data_types');
 
 class WeightedCollection extends Collection
 {
@@ -89,3 +88,4 @@ class WeightedCollection extends Collection
 	
 }
 
+Samara_Include('Integer', 'inc/data_types');

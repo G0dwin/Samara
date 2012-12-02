@@ -6,16 +6,15 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function __construct()
 	{
+		parent::__construct();
 		$this->always_include = false;
 	}
 	
 	public function testObjectsWorkNormallyWhenNoModulesExist()
 	{
-		$class = $this->namespace.'\Test';
-		
 		Samara_Include('Test', 'Tests/artifacts');
 		
-		$obj = new $class();
+		$obj = $this->new_Test();
 		
 		$this->assertEquals(7, $obj->Calculate(3, 4));
 		$this->assertEquals('TEST A', $obj->ToString());
@@ -23,13 +22,11 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function testObjectsCanOverrideMethods()
 	{
-		$class = $this->GetClass('Test');//$this->namespace.'\Test';
-	
 		Samara_Around('Test', 'Tests/artifacts/Test2');
 		
 		Samara_Include('Test', 'Tests/artifacts');
 	
-		$obj = new $class();
+		$obj = $this->new_Test();
 	
 		$this->assertEquals(12, $obj->Calculate(3, 4));
 		$this->assertEquals('TEST A', $obj->ToString());
@@ -60,7 +57,7 @@ class IncludeTest extends Samara_TestCase {
 		
 		Samara_Include('Test', 'Tests/artifacts');
 	
-		$obj = new $class();
+		$obj = $this->new_Test();
 	
 		$this->assertEquals(-12, $obj->Calculate(3, 4));
 		$this->assertEquals('TEST B', $obj->ToString());
@@ -69,11 +66,9 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function testCanSupportIneritance()
 	{
-		$class = $this->namespace.'\TestTest';
-	
 		Samara_Include('TestTest', 'Tests/artifacts');
 	
-		$obj = new $class();
+		$obj = $this->new_TestTest();
 		
 		$this->assertEquals(70, $obj->Calculate(3, 4));
 		$this->assertEquals('TESTTEST A', $obj->ToString());
@@ -81,14 +76,12 @@ class IncludeTest extends Samara_TestCase {
 	
 	public function testCanSupportInsertedIneritance()
 	{
-		$class = $this->namespace.'\TestTest';
-	
 		Samara_Around('Test', 'Tests/artifacts/Test2');
 	
 		Samara_Include('TestTest', 'Tests/artifacts');
 	
-		$obj = new $class();
-		
+		$obj = $this->new_TestTest();
+				
 		$this->assertEquals(120, $obj->Calculate(3, 4));
 		$this->assertEquals('TESTTEST A', $obj->ToString());
 	}

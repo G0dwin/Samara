@@ -1,7 +1,6 @@
 <?php 
 
 Samara_Include('TableAlias', 'inc/queries');
-Samara_Include('Database', 'inc');
 
 class SubQuery extends TableAlias
 {
@@ -33,3 +32,4 @@ class SubQuery extends TableAlias
 	
 }
 
+Samara_Include('Database', 'inc');

@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('UpdateQuery', 'inc/queries');
-Samara_Include('ColumnReference', 'inc/queries');
 
 class DeleteQuery extends UpdateQuery
 {
@@ -23,3 +22,4 @@ class DeleteQuery extends UpdateQuery
 	
 }
 
+Samara_Include('ColumnReference', 'inc/queries');

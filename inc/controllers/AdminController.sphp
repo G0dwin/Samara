@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('Controller', 'inc');
-Samara_Include('UserController', 'inc/controllers');
 
 class AdminController extends Controller
 {
@@ -79,7 +78,7 @@ class AdminController extends Controller
     		$str .= file_get_contents($filename);
 		}
 		$str .= '</extension-list>';
-		Theme::SetPageTemplate('<page title="Extensions">'.$message.$this->extensionLinks().'<extension-info>'.$str.'</extension-info></page>');
+		Theme::SetPageTemplate('<page title="Extension Administration">'.$message.$this->extensionLinks().'<extension-info>'.$str.'</extension-info></page>');
 		return Theme::getView();
 	}
 	
@@ -181,6 +180,37 @@ class AdminController extends Controller
 		$this->updateDatabase();
 		$this->fullRedirect('extensions');
 	}
+	
+	protected function renderContent()
+	{
+		if (Controller::Param(0))
+		{
+			$type = Controller::Param(0);
+			$class = Samara_ToCamelCase($type);
+			Samara_Include($class, 'inc/domain');
+			$objects = $class::GetAll();
+			$str = '';
+			foreach ($objects as $object)
+			{
+				$str .= $object->Render('form');
+			}
+			Theme::SetPageTemplate('<page title="Content List" sub-title="'.Samara_CamelCaseToReadableCase($class).'"><object-list type="'.$type.'">'.$str.'</object-list></page>');
+		}
+		else
+		{
+			$str = '<menu name="Content Types">';//<list type="content-type" title="Content Types">';
+			$types = UpdateManager::GetDomainObjectList();
+			sort($types);
+			foreach ($types as $class)
+			{
+				$str .= '<link controller="admin" action="content" params="'.Samara_ToUnderscoreCase($class).'">'.Samara_CamelCaseToReadableCase($class).'</link>';
+			}
+			$str .= '</menu>';
+			Theme::SetPageTemplate('<page title="Content Administration">'.$str.'</page>');
+		}
+		return Theme::getView();
+	}
+	
 }
 
-
+Samara_Include('UserController', 'inc/controllers');

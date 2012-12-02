@@ -1,9 +1,9 @@
 <?php
 
-Samara_Include('Database', 'inc');
-Samara_Include('Controller', 'inc');
+Samara_Include('SamaraBase', 'inc');
+Samara_Include('Renderable', 'inc');
 
-abstract class DataObject extends SamaraBase
+abstract class DataObject extends SamaraBase implements Renderable
 {
 	
 	protected $value;
@@ -158,10 +158,10 @@ abstract class DataObject extends SamaraBase
 		return Samara_ToUnderscoreCase($this->name);
 	}
 	
-	public static function IsA($obj)
+	/*public static function IsA($obj)
 	{
 		return is_a($obj, get_called_class());
-	}
+	}*/
 	
 	public function IsNullable()
 	{
@@ -252,10 +252,13 @@ abstract class DataObject extends SamaraBase
 	{
 		$ancestor = get_class($this);
 		$ancestors = array();
-		while ($ancestor)
+		while (DataObject::IsA($ancestor, true))
 		{
-			$ancestors[] = ($underscore_case ? Samara_ToUnderscoreCase($ancestor) : $ancestor);
-			$ancestor = get_parent_class($ancestor);
+			//if (get_class($ancestor) !== DataObject)
+			//{
+				$ancestors[] = ($underscore_case ? Samara_ToUnderscoreCase($ancestor) : $ancestor);
+				$ancestor = get_parent_class($ancestor);
+			//}
 		}
 		return $ancestors;
 	}
@@ -272,7 +275,7 @@ abstract class DataObject extends SamaraBase
 		return '<control '.implode(' ', $types).' param="'.$underscore.'" label="'.$this->GetName().'">'.$this->GetValue().'</control>';
 	}
 	
-	public function Render($forms_view = false)
+	public function Render($view = null)
 	{
 		$types = array();
 		$i = 0;
@@ -306,3 +309,6 @@ abstract class DataObject extends SamaraBase
 	public function PostLoad() {}
 	
 }
+
+Samara_Include('Database', 'inc');
+Samara_Include('Controller', 'inc');

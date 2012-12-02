@@ -1,7 +1,6 @@
 <?php
 
-Samara_Include('Vars', 'inc');
-Samara_Include('UpdateManager', 'inc');
+Samara_Include('SamaraBase', 'inc');
 
 class Database extends SamaraBase
 {
@@ -29,7 +28,7 @@ class Database extends SamaraBase
 		if (!$saved_connector)
 		{
 			global $samara_db_info;
-			$saved_connector = $this->conection = new mysqli(
+			$saved_connector = $this->conection = new \mysqli(
 											$samara_db_info['host'],
 											$samara_db_info['username'],
 											$samara_db_info['passwd'],
@@ -378,3 +377,5 @@ Samara_Include('SelectQuery', 'inc/queries');
 Samara_Include('DeleteQuery', 'inc/queries');
 Samara_Include('InsertQuery', 'inc/queries');
 Samara_Include('UpdateQuery', 'inc/queries');
+Samara_Include('Vars', 'inc');
+Samara_Include('UpdateManager', 'inc');

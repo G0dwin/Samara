@@ -19,5 +19,38 @@
 			</xsl:when>
 		</xsl:choose>
 	</xsl:template>
+	
+	<xsl:template match="object-list">
+		<table>
+			<thead><tr><th class="select"></th><th class="title">Title</th><th class="actions">Options</th></tr></thead>
+			<tbody><xsl:apply-templates /></tbody>
+			<tfoot><tr><th class="select"></th><th class="title"></th><th class="actions"></th></tr></tfoot>
+		</table>
+	</xsl:template>
+
+	<xsl:template match="object-list//object">
+		<tr>
+			<td class="select">
+				<input type="checkbox">
+					<xsl:attribute name="name">select-<xsl:value-of select="@id" /></xsl:attribute>
+					<xsl:attribute name="id">select-<xsl:value-of select="@id" /></xsl:attribute>
+				</input>
+			</td>
+			<td class="title">
+				<a>
+				<xsl:attribute name="href">/<xsl:value-of select="@type" />/show/<xsl:value-of select="@id" /></xsl:attribute>
+				<xsl:call-template name="get-field">
+					<xsl:with-param name="field" select="'title'" />
+				</xsl:call-template>
+				</a>
+			</td>
+			<td class="actions">...</td>
+		</tr>
+	</xsl:template>
+	
+	<xsl:template name="get-field">
+		<xsl:param name="field" />
+		<xsl:value-of select="field[@*[starts-with(name(), 'type')]=$field]" />
+	</xsl:template>
 
 </xsl:stylesheet>

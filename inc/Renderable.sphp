@@ -2,6 +2,6 @@
 
 interface Renderable
 {
-	public function Render();
+	public function Render($view = null);
 }
 

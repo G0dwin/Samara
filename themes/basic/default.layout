@@ -150,7 +150,7 @@
 	<xsl:template match="link">
 		<a>
 			<xsl:attribute name="href">
-				/<xsl:if test="string-length(@controller) &gt; 0"><xsl:value-of select="@controller" />/</xsl:if><xsl:if test="string-length(@action) &gt; 0"><xsl:value-of select="@action" /></xsl:if>
+				/<xsl:if test="string-length(@controller) &gt; 0"><xsl:value-of select="@controller" />/</xsl:if><xsl:if test="string-length(@action) &gt; 0"><xsl:value-of select="@action" /><xsl:if test="string-length(@params) &gt; 0">/<xsl:value-of select="translate(@params, ' ', '/')" /></xsl:if></xsl:if>
 			</xsl:attribute>
 			<xsl:apply-templates />
 		</a>

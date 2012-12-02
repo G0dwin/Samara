@@ -684,7 +684,7 @@ body > header ul.menu li {
 	margin: 0px 8px;
 }
 
-table.extension-info {
+table {
 	width: 100%;
 	color: #333;
 	text-shadow: 0px 0px 1px #888;
@@ -728,12 +728,19 @@ table thead {
 	background-color: rgba(128, 128, 128, 0.1);
 }*/
 
+table tr .select {
+	text-align: center;
+}
+
 table tr .actions {
 	border-left: 2px solid rgba(106, 133, 140, 0.5);
 	text-align: center;
-	vertical-align: middle;
 	margin: 0;
 	padding: 0;
+}
+
+table tr td.actions {
+	vertical-align: middle;
 	white-space: nowrap;
 }
 
@@ -741,9 +748,14 @@ table tr .hidden {
 	width: 32px;
 }
 
-table tr .name {
+table tr .name,
+table tr .title {
 	border-left: 1px solid rgba(146, 88, 110, 0.1);
 	border-right: 1px solid rgba(146, 88, 110, 0.1);
+}
+
+table td.title {
+	width: 100%;
 }
 
 tr .hidden {
@@ -761,7 +773,15 @@ tr.updated .hidden {
 	background-image: url(/themes/basic/asterix.png);
 }
 
-table a {
+#content table a {
+	color: black;
+	border: none;
+	font-size: 14px;
+	text-shadow: 0px 0px 1px black;
+	line-height: 20px;
+}
+
+table .actions a {
 	text-decoration: none;
 	color: #444;
 	padding: 3px 2px 2px 2px;
@@ -773,7 +793,7 @@ table a {
 	opacity: 0.75;
 }
 
-table a:hover {
+table .actions a:hover {
     background-color: rgba(255, 255, 0, 0.5);
 	border: 1px solid #DD0;
 	opacity: 1;

@@ -1,8 +1,6 @@
 <?php
 
-Samara_Include('QueryPart', 'inc/queries');
 Samara_Include('ColumnReference', 'inc/queries');
-Samara_Include('DataObject', 'inc');
 
 class AggreateFunction extends ColumnReference
 {
@@ -54,3 +52,5 @@ class AggreateFunction extends ColumnReference
 	
 }
 
+Samara_Include('QueryPart', 'inc/queries');
+Samara_Include('DataObject', 'inc');

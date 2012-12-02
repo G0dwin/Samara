@@ -13,3 +13,5 @@ class User extends DomainObject
 	}
 	
 }
+
+Samara_Include('String', 'inc/data_types');

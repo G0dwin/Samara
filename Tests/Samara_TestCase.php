@@ -6,13 +6,14 @@ define('SAMARA_PROD',	0x3);	// For production: comiples when out of date
 
 define('SAMARA_ROOT', dirname(__DIR__).'/');
 define('SAMARA_BUILD', SAMARA_TEST);
+define('SAMARA_CACHE_DIR', __DIR__.'/class_cache/');
+define('SAMARA_EXTENSIONS_DIR', SAMARA_ROOT.'extensions/');
+define('SAMARA_PREFIX', '');
 
 require_once 'PHPUnit\Framework\TestCase.php';
 require_once '\settings.php';
 require_once '\inc\include.php';
 require_once '\inc\modules.php';
-
-$samara_test_id = 0;
 
 abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 {
@@ -24,13 +25,17 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	public $reset_modules;
 	public $class_cache_dir;
 	
-	protected function prepareTemplate(Text_Template $template)
+	
+	protected static function emptyDir($dir)
 	{
-		//use custom process-isolation template
-		$template->setFile('/Tests/Samara_TestCase.tpl');
-		//$template->setVar(array('bootstrap' => '/Test/testBootstrap.php'));
+		return is_file($dir) ? @unlink($dir): array_map('Samara_TestCase::rmDir', glob($dir.'/*'));
 	}
-
+	
+	protected static function rmDir($dir)
+	{
+		return is_file($dir) ? @unlink($dir): array_map('Samara_TestCase::rmDir', glob($dir.'/*'))==@rmdir($dir);
+	}
+	
 	/**
 	 * Prepares the environment before running a test.
 	 */
@@ -38,31 +43,42 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
-		define('SAMARA_CACHE_DIR', __DIR__.'/class_cache/'.get_class($this).'/'.$this->getName().'/');
+		//define('SAMARA_CACHE_DIR', __DIR__.'/class_cache/'.get_class($this).'/'.$this->getName().'/');
+		global $samara_test_name, $samara_test_class, $samara_test_id;
+		static $s_samara_test_id = 0;
+		$samara_test_class = get_class($this);
+		$samara_test_name = $this->getName();
+		//if ($samara_test_id)
+		//{
+			//die($samara_test_id);
+		//}
+		$s_samara_test_id = $s_samara_test_id ? $s_samara_test_id + 1 : 1;
+		$samara_test_id = $samara_test_class.$s_samara_test_id;
 		
-		if (!is_dir(dirname(SAMARA_CACHE_DIR)))
+		if (is_dir(Samara_CacheDir()))
 		{
-			mkdir(dirname(SAMARA_CACHE_DIR));
+			Samara_TestCase::rmDir(Samara_CacheDir());
 		}
-		if (!is_dir(SAMARA_CACHE_DIR))
+		//die(Samara_CacheDir());
+		if (!is_dir(dirname(Samara_CacheDir())))
 		{
-			mkdir(SAMARA_CACHE_DIR);
+			mkdir(dirname(Samara_CacheDir()));
 		}
-		
-		global $samara_test_id;
-		define('SAMARA_PREFIX', 'S'.$samara_test_id++.'_');
-		
+		mkdir(Samara_CacheDir());
+				
 		//global $samara_include_method, $samara_modules;//, $samara_namespace;
-		global $samara_modules;//, $samara_namespace;
+		//global $samara_modules;//, $samara_namespace;
 		//$samara_include_method = SAMARA_TEST;
-		if ($this->reset_modules !== FALSE)
+		/*if ($this->reset_modules !== FALSE)
 		{
 			$samara_modules = array();
-		}
+		}*/
 		//$samara_namespace = $this->getName().__CLASS__;
 		//$this->namespace = $samara_namespace;
+		
 		if ($this->always_include)
 		{
+			//echo 'YES'."\n";
 			Samara_Include($this->class_under_test, $this->file_location);
 		}
 	}
@@ -77,8 +93,13 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	
 	protected function Create($class, $args)
 	{
-		$reflector = new ReflectionClass($this->GetClass($class));
-		return $reflector->newInstanceArgs($args);
+		$class = $this->GetClass($class);
+		if ($args)
+		{
+			$reflector = new ReflectionClass($class);
+			return $reflector->newInstanceArgs($args);
+		}
+		return new $class();
 	}
 	
 	public function __call($name, $args)
@@ -94,7 +115,7 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 	{
 		//return $this->namespace.'\\'.($class ?: $this->class_under_test);
 		global $samara_test_id;
-		return SAMARA_PREFIX.($class ?: $this->class_under_test);
+		return Samara_FullClass($class ?: $this->class_under_test);
 	}
 	
 	protected function NewTestObject()
@@ -118,6 +139,8 @@ abstract class Samara_TestCase extends PHPUnit_Framework_TestCase
 		$this->class_under_test = preg_replace('/^(.*\\\\)?(.*)(Test)$/', '$2', get_called_class());
 		$this->file_location = 'inc';
 		$this->always_include = true;
+		global $samara_test_class;
+		$samara_test_class = get_class($this);
 		//$this->class_cache_dir = __DIR__.'/class_cache/'.get_class($this).'/';
 		//if (!is_dir($this->class_cache_dir))
 		//{

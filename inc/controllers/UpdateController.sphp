@@ -1,8 +1,6 @@
 <?php
 
-Samara_Include('User', 'inc/domain');
 Samara_Include('Controller', 'inc');
-Samara_Include('UpdateManager', 'inc');
 
 class UpdateController extends Controller
 {
@@ -49,3 +47,5 @@ class UpdateController extends Controller
 	
 }
 
+Samara_Include('User', 'inc/domain');
+Samara_Include('UpdateManager', 'inc');

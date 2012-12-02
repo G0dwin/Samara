@@ -40,7 +40,7 @@ class Controller extends SamaraBase
 			}
 			return null;
 		}
-		throw new \Exception("The method $class::$name does not exist");
+		throw new Exception("The method $class::$name does not exist");
 	}
 	
 	protected static function getInstanceOf($name)
@@ -73,10 +73,10 @@ class Controller extends SamaraBase
 		}
 		if ($exists)
 		{
-			throw new \Exception("The method $class::$name is not public");
+			throw new Exception("The method $class::$name is not public");
 		}
 		//return $called_class;
-		throw new \Exception("The method $class::$name does not exist");
+		throw new Exception("The method $class::$name does not exist");
 	}
 	
 	protected function HasMethod($name)

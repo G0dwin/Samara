@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('DomainObjectController', 'inc');
-Samara_Include('Menu', 'inc/domain');
 
 class MenuController extends DomainObjectController
 {
@@ -55,3 +54,4 @@ class MenuController extends DomainObjectController
 	
 }
 
+Samara_Include('Menu', 'inc/domain');

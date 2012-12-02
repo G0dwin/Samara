@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('UserReference', 'inc/data_types');
-Samara_Include('UserController', 'inc/controllers');
 
 class Owner extends UserReference
 {
@@ -11,3 +10,4 @@ class Owner extends UserReference
 	}
 }
 
+Samara_Include('UserController', 'inc/controllers');

@@ -1,13 +1,6 @@
 <?php 
 
-Samara_Include('Database', 'inc');
 Samara_Include('Query', 'inc/queries');
-Samara_Include('ColumnReference', 'inc/queries');
-Samara_Include('TableAlias', 'inc/queries');
-Samara_Include('WhereStatement', 'inc/queries');
-Samara_Include('HavingStatement', 'inc/queries');
-Samara_Include('SubQuery', 'inc/queries');
-Samara_Include('DomainObject', 'inc');
 
 class SelectQuery extends Query
 {
@@ -382,3 +375,11 @@ class SelectQuery extends Query
  		return $this;
  	}
 }
+
+Samara_Include('Database', 'inc');
+Samara_Include('ColumnReference', 'inc/queries');
+Samara_Include('TableAlias', 'inc/queries');
+Samara_Include('WhereStatement', 'inc/queries');
+Samara_Include('HavingStatement', 'inc/queries');
+Samara_Include('SubQuery', 'inc/queries');
+Samara_Include('DomainObject', 'inc');

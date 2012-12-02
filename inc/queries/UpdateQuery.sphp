@@ -1,7 +1,6 @@
 <?php
 
 Samara_Include('Query', 'inc/queries');
-Samara_Include('SelectQuery', 'inc/queries');
 
 class UpdateQuery extends Query
 {
@@ -87,7 +86,7 @@ class UpdateQuery extends Query
 	public function Where()
 	{
 		$conditions = func_get_args();
-		$this->where = new Where($conditions);
+		$this->where = new WhereStatement($conditions);
 		return $this;
 	}
 	
@@ -126,3 +125,5 @@ class UpdateQuery extends Query
  	}
  	
 }
+
+Samara_Include('SelectQuery', 'inc/queries');

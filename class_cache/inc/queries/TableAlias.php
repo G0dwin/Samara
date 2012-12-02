@@ -1,8 +1,6 @@
 <?php 
 
-Samara_Include('QueryPart', 'inc/queries');
 Samara_Include('ColumnReference', 'inc/queries');
-Samara_Include('DataObject', 'inc');
 
 class TableAlias extends ColumnReference
 {
@@ -30,3 +28,5 @@ class TableAlias extends ColumnReference
 	
 }
 
+Samara_Include('QueryPart', 'inc/queries');
+Samara_Include('DataObject', 'inc');

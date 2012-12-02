@@ -1,5 +1,7 @@
 <?php 
 
+Samara_Include('SamaraBase', 'inc');
+
 abstract class QueryPart extends SamaraBase
 {
 
@@ -18,10 +20,10 @@ abstract class QueryPart extends SamaraBase
 		trigger_error("Call to undefined method $class::$name() in $file on line $line", E_USER_ERROR);
 	}
 	
-	public static function IsA($obj)
+	/*public static function IsA($obj)
 	{
 		return $obj !== NULL && is_a($obj, get_called_class());
-	}
+	}*/
 	
 }
 

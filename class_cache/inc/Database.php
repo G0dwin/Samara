@@ -1,7 +1,6 @@
 <?php 
 
-Samara_Include('Vars', 'inc');
-Samara_Include('UpdateManager', 'inc');
+Samara_Include('SamaraBase', 'inc');
 
 class Database extends SamaraBase
 {
@@ -61,9 +60,9 @@ class Database extends SamaraBase
 		}
 		if ($exists)
 		{
-			throw new \Exception("The method $class::$name is not public");
+			throw new Exception("The method $class::$name is not public");
 		}
-		throw new \Exception("The method $class::$name does not exist");
+		throw new Exception("The method $class::$name does not exist");
 	}
 	
 	protected function ExecuteQuery($query)
@@ -378,3 +377,5 @@ Samara_Include('SelectQuery', 'inc/queries');
 Samara_Include('DeleteQuery', 'inc/queries');
 Samara_Include('InsertQuery', 'inc/queries');
 Samara_Include('UpdateQuery', 'inc/queries');
+Samara_Include('Vars', 'inc');
+Samara_Include('UpdateManager', 'inc');

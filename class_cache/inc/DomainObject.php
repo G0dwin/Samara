@@ -1,8 +1,9 @@
 <?php 
 
 Samara_Include('Renderable', 'inc');
+Samara_Include('SamaraBase', 'inc');
 
-abstract class DomainObject implements Renderable {
+abstract class DomainObject extends SamaraBase implements Renderable {
 	
 	protected $properties;
 	protected $last_alias;
@@ -115,7 +116,7 @@ abstract class DomainObject implements Renderable {
 			}
 		}
 		
-		throw new \BadMethodCallException('Unknown property: '.$name);
+		throw new BadMethodCallException('Unknown property: '.$name);
 	}
 	
 	public function __set($name, $value)
@@ -128,7 +129,7 @@ abstract class DomainObject implements Renderable {
 			}
 		}
 		
-		throw new \BadMethodCallException('Unknown property: '.$name);
+		throw new BadMethodCallException('Unknown property: '.$name);
 	}
 	
 	public function HasProperty($name)
@@ -270,14 +271,14 @@ abstract class DomainObject implements Renderable {
 		return $xml;
 	}
 	
-	public function Render($form_view = false)
+	public function Render($view = null)
 	{
 		$xml = '<object type="'.Samara_ToUnderscoreCase(get_class($this)).'" display-name="'.((string)$this).'" id="'.$this->ID->Value.'">';
 		//if (!$form_view)
 		//{
 			foreach ($this->GetProperties() as $property)
 			{
-				$xml .= $property->Render($form_view);
+				$xml .= $property->Render($view);
 			}
 		//}
 		$xml .= '</object>';

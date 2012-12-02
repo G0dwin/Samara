@@ -2,6 +2,7 @@
 
 	<css-file>/themes/basic/css/smoothness/jquery-ui-1.8.23.custom.css</css-file>
 	<css-file>/themes/basic/js/chosen.css</css-file>
+	<css-file>/themes/basic/css/ezmark.css</css-file>
 	<?php echo Theme::RenderComponent('css-files'); ?>
 	<css-file>http://fonts.googleapis.com/css?family=Codystar</css-file>
 	<css-file>http://fonts.googleapis.com/css?family=Open Sans</css-file>
@@ -11,6 +12,7 @@
 	<js-file>/themes/basic/js/jquery-ui-1.8.23.custom.min.js</js-file>
 	<js-file>/themes/basic/js/chosen.js</js-file>
 	<js-file>/themes/basic/js/jquery.elastic.source.js</js-file>
+	<js-file>/themes/basic/js/jquery.ezmark.min.js</js-file>
 	<?php echo Theme::RenderComponent('js-files'); ?>
 		
 	<?php echo Theme::RenderComponent('app-icon'); ?>

@@ -1,5 +1,7 @@
 <?php
 
+Samara_Include('SamaraBase', 'inc');
+
 class Vars extends SamaraBase
 {
 	

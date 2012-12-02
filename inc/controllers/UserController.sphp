@@ -1,11 +1,8 @@
 <?php
 
-Samara_Include('Controller', 'inc');
-Samara_Include('Vars', 'inc');
-Samara_Include('User', 'inc/domain');
-Samara_Include('Link', 'inc');
+Samara_Include('DomainObjectController', 'inc');
 
-class UserController extends Controller
+class UserController extends DomainObjectController
 {
 	
 	protected function components()
@@ -62,3 +59,7 @@ class UserController extends Controller
 	}
 	
 }
+
+Samara_Include('Vars', 'inc');
+Samara_Include('User', 'inc/domain');
+Samara_Include('Link', 'inc');

@@ -111,6 +111,7 @@ $(document).ready(
 			$('.collection-template > ul.templates.weighted').sortable({update: function(event, ui) { updateIndexsToCollectionForm(this); }});
 			$('select').chosen();
 			$('textarea').elastic();
+			$('input[type="checkbox"]').ezMark();
 			//$('textarea').resize();
 			//$('textarea.resizable:not(.processed)').TextAreaResizer();
 			//$('*').load(function() { $('textarea').trigger('update'); } );

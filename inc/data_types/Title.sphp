@@ -5,7 +5,7 @@ Samara_Include('String', 'inc/data_types');
 class Title extends String
 {
 
-	public function __construct($name, $value = NULL)
+	public function __construct($name = null, $value = null)
 	{
 		parent::__construct($name, 128, $value);
 	}

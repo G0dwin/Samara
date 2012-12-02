@@ -10,5 +10,3 @@ class HavingStatement extends WhereStatement
 	}
 	
 }
-
-?>

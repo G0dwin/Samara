@@ -43,9 +43,14 @@ abstract class DomainObjectController extends Controller
 	{
 		$type = $this->getDomainObjectType();
 		$do = $type::Get($this->Param(0));
-		$title = $do->PropertyOfType('Title');
-		Theme::SetPageTemplate('<page title="'.($title === null ? 'View '.$type : $title->Value).'">'.$do->Render().'</page>');
+		Theme::SetPageTemplate('<page '.$this->getShowTitle($type, $do).'>'.$do->Render().'</page>');
 		return Theme::getView();
+	}
+	
+	protected function getShowTitle($type, $object)
+	{
+		$title = $object->PropertyOfType('Title');
+		return 'title="'.($title === null ? 'View '.$type : $type.'" sub-title="'.$title->Value).'"';
 	}
 	
 	protected function getDomainObjectType()
@@ -54,4 +59,3 @@ abstract class DomainObjectController extends Controller
 	}
 	
 }
-

@@ -22,34 +22,40 @@ function Samara_GetFile($filename)
 function Samara_Reclass($contents, $old_class, $new_class, $parent, $is_first)
 {
 	$result = $contents;
-	$result = preg_replace('/(abstract\s*)?(class\s*)'.$old_class.'(\s*extends\s*[^\s]*)?(\s*implements\s*[^\{]*)?(\s*\{)/', "\r\n\r\n".($is_first ? '$1' : 'abstract ').'$2'.SAMARA_PREFIX.$new_class.($parent ? ' extends '.SAMARA_PREFIX.$parent : '$3').'$4$5', $result);
+	$prefix = '';//Samara_GetPrefix();
+	//throw new Exception($old_class.' :: '.$new_class);
+	$result = preg_replace('/(abstract\s*)?(class\s*)'.$old_class.'(\s*extends\s*[^\s]*)?(\s*implements\s*[^\{]*)?(\s*\{)/', "\r\n\r\n".($is_first ? '$1' : 'abstract ').'$2'.$prefix.$new_class.($parent ? ' extends '.$prefix.$parent : '$3').'$4$5', $result);
 	//$result = preg_replace('/(?<!~)~(?!~)/', SAMARA_PREFIX.'_', $result);
 	//$result = str_replace('~~', '~', $result);
 	
-	if (SAMARA_PREFIX)
+	/*if ($prefix)
 	{
 		static $classes = array();
-		$classes[$old_class] = SAMARA_PREFIX.$old_class;
+		$classes[$old_class] = $prefix.$old_class;
 		
 		foreach ($classes as $old => $new)
 		{
 			$result = preg_replace('/\\b(?<!~)'.$old.'\\b/', $new, $result);
 			$result = preg_replace('/\\b~'.$old.'\\b/', $old, $result);
 		}
-	}
+	}*/
 		
 	return $result;
 }
 
 function Samara_IncludeContents($contents, $class, $dir)
 {
-	global $samara_include_method;
-	$fullclass = SAMARA_PREFIX.$class;//$namespace.'\\'.$class;
+	$fullclass = Samara_FullClass($class);//$namespace.'\\'.$class;
 	//$cache_dir = SAMARA_CACHE_DIR;//($samara_include_method == SAMARA_TEST ? SAMARA_ROOT.'Tests/class_cache/'.$namespace.'/' : SAMARA_ROOT.'class_cache/');
 	$parts = explode('/', $dir);
-	$curr_dir = SAMARA_CACHE_DIR;
+	$cache_dir = Samara_CacheDir();
+	$curr_dir = $cache_dir;
 	if (!is_dir($curr_dir))
 	{
+		if (!is_dir(dirname($curr_dir)))
+		{
+			mkdir(dirname($curr_dir));
+		}
 		mkdir($curr_dir);
 	}
 	foreach ($parts as $part)
@@ -60,22 +66,85 @@ function Samara_IncludeContents($contents, $class, $dir)
 		}
 	}
 	
+	$filename = $cache_dir.$dir.'/'.$class.'.php';
 	if (!class_exists($fullclass) && !interface_exists($fullclass))
 	{
-		$filename = SAMARA_CACHE_DIR.$dir.'/'.$class.'.php';
-		file_put_contents($filename, '<?php '."\r\n\r\n".$contents);
+		
+		if (!file_exists($filename) || SAMARA_BUILD == SAMARA_DEV)
+		{
+			$contents = preg_replace('/\\b(interface\\s+)(\\w+[\\s|\\{])/', '$1'.Samara_GetPrefix().'$2', $contents);
+			$contents = preg_replace('/\\b(class\\s+)(\\w+)\\b/', '$1'.Samara_GetPrefix().'$2', $contents);
+			$contents = preg_replace('/(\\s+class\\s+\\w+\\s+extends\\s+)(\\w+)\\b/', '$1'.Samara_GetPrefix().'$2', $contents);
+			$contents = preg_replace('/(\\s+class\\s+\\w+\\s+)(extends\\s+\\w+\\s+)?(implements\\s+)(\\w+)\\b/', '$1$2$3'.Samara_GetPrefix().'$4', $contents);
+			$contents = preg_replace('/\\b(new\\s+)(\\w+)\\b/', '$1'.Samara_GetPrefix().'$2', $contents);
+			$contents = preg_replace('/\\b(?<![\\\\|\\$])([A-Z]\\w+)::/', Samara_GetPrefix().'$1::', $contents);
+			$contents = preg_replace('/\\b(new\\s+)\\\\(\\w+)\\b/', '$1$2', $contents);
+			$contents = preg_replace('/\\b\\\\(\\w+)::\\b/', '$1::', $contents);
+			$contents = preg_replace('/([\(|\,]\s*)(?<![\\\\|\\$])(\w+)(\s+\$\w+)/', '$1'.Samara_GetPrefix().'$2$3', $contents);
+			file_put_contents($filename, '<?php '."\r\n\r\n".$contents);
+			//echo $filename.(file_exists($filename) ? ' YES' : ' NO')."\n";
 		//echo $filename."\n";//$filename."\n";
-		include_once $filename;
+			include_once $filename;
+		}
+		//$rf = get_included_files();
 		//echo (file_exists($filename) ? ' YES' : ' NO')."\n";
 		//echo $fullclass.(class_exists($fullclass) ? ' YES' : ' NO')."\n";
+		if (!class_exists($fullclass) && !interface_exists($fullclass))
+		{
+			//die($contents);
+			//require $filename;
+			//echo $fullclass.(class_exists($fullclass) ? ' YES' : ' NO')."\n";
+			//print_r(get_included_files());//$rf);//get_required_files());// get_included_files());
+			//$x = array_search($filename, $rf);
+			//echo $x ?: 'FALSE'."\n";
+			//for ($i = 0; $i < count($rf) && $i < 71; $i++)
+			//{
+			//	echo $rf[$i]."\n";
+			//}
+			//die();//$x);
+		}
 	}
+}
+
+function Samara_GetExtensionDir()
+{
+	if (SAMARA_BUILD == SAMARA_TEST)
+	{
+		global $extension_dir;
+		return $extension_dir;
+	}
+	return SAMARA_EXTENSIONS_DIR;
+}
+
+function Samara_GetPrefix()
+{
+	if (SAMARA_BUILD == SAMARA_TEST)
+	{
+		global $samara_test_id;
+		return $samara_test_id.'_';
+	}
+	return SAMARA_PREFIX;
+}
+
+function Samara_FullClass($class)
+{
+	return Samara_GetPrefix().Samara_RemovePrefix($class);
+}
+
+function Samara_CacheDir()
+{
+	if (SAMARA_BUILD == SAMARA_TEST)
+	{
+		global $samara_test_class, $samara_test_name;
+		return SAMARA_CACHE_DIR.$samara_test_class.'/'.$samara_test_name.'/';
+	}
+	return SAMARA_CACHE_DIR;
 }
 
 function Samara_ClassExists($class, $dir)
 {
-	global $samara_namespace;
-	
-	$full_class = $samara_namespace.'\\'.$class;
+	//global $samara_namespace;
+	$full_class = Samara_FullClass($class);
 	if (class_exists($full_class) || interface_exists($full_class))
 	{
 		return true;
@@ -94,7 +163,7 @@ function Samara_Include($class, $dir)
 	
 	//$class = Samara_GetClassName($class);
 	
-	$full_class = SAMARA_PREFIX.$class;//$samara_namespace.'\\'.$class;
+	$full_class = Samara_FullClass($class);//SAMARA_PREFIX.$class;//$samara_namespace.'\\'.$class;
 	if (class_exists($full_class) || interface_exists($full_class))
 	{
 		return;
@@ -136,7 +205,7 @@ function Samara_Include($class, $dir)
 
 function Samara_LoadExtensions()
 {
-	foreach (glob(SAMARA_ROOT.'extensions/init.php') as $include)
+	foreach (glob(Samara_GetExtensionDir().'*/init.php') as $include)
 	{
 		require_once $include;
 	}

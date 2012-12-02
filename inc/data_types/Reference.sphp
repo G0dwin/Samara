@@ -32,12 +32,15 @@ class Reference extends Integer {
 		return true;
 	}
 	
-	public function Render($form_view = false)
+	public function Render($view = null)
 	{
-		return '';
+		if ($view == 'form')
+		{
+			return '';
+		}
 		$type = $this->type;
 		$object = $type::Get($this->GetValue());
-		return $object->Render($form_view);
+		return $object->Render($view);
 	}
 	
 	public function RenderInput()
@@ -55,11 +58,11 @@ class Reference extends Integer {
 		if ($this->IsNullable())
 		{
 			$object = new $type();
-			$field .= $object->Render(true);
+			$field .= $object->Render('form');
 		}
 		foreach ($type::GetAll() as $object)
 		{
-			$field .= $object->Render(true);
+			$field .= $object->Render('form');
 		}
 		$field .= '</control>';
 		return $field;

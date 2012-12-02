@@ -188,7 +188,7 @@ class UpdateManagerTest extends Samara_TestCase
 		
 	}
 	
-	public function testCreateUpdateScriptShouldCreateTableIfNtExist()
+	public function testCreateUpdateScriptShouldCreateTableIfNotExist()
 	{
 		$UpdateManager = $this->GetClass();
 		$Database = $this->GetClass('Database');

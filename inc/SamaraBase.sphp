@@ -2,9 +2,20 @@
 
 abstract class SamaraBase
 {
-	public static function IsA($obj)
+	
+	public static function IsA($obj, $check_string = FALSE)
 	{
-		return is_a($obj, get_called_class());
+		if ($check_string === TRUE && is_string($obj) && class_exists($obj))
+		{
+			$class = new ReflectionClass($obj);
+			if ($class->isAbstract())
+			{
+				return false;
+			}			
+			$obj = new $obj();
+		}
+		return $obj !== NULL && is_a($obj, get_called_class());
 	}
+	
 }
 

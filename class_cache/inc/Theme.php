@@ -1,6 +1,6 @@
 <?php 
 
-//use XSLTProcessor, SimpleXMLElement;
+Samara_Include('SamaraBAse', 'inc');
 
 class Theme extends SamaraBase
 {

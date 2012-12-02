@@ -1,13 +1,6 @@
 <?php
 
-Samara_Include('Link', 'inc');
 Samara_Include('DomainObject', 'inc');
-Samara_Include('Title', 'inc/data_types');
-Samara_Include('Collection', 'inc/data_types');
-Samara_Include('WeightedCollection', 'inc/data_types');
-Samara_Include('Reference', 'inc/data_types');
-
-//echo 'POOP!'."\n";
 
 class Menu extends DomainObject {
 	
@@ -46,11 +39,11 @@ class Menu extends DomainObject {
 		return $this;
 	}
 	
-	public function Render($default = false)
+	public function Render($view = null)
 	{
-		if ($default)
+		if ($view == 'form')
 		{
-			return parent::Render(true);
+			return parent::Render('form');
 		}
 		$xml = '<menu name="'.$this->Name->Value.'"';
 		foreach ($this->Attribute->Value as $attribute)
@@ -66,7 +59,7 @@ class Menu extends DomainObject {
 		{
 			foreach ($this->MenuItem->Value as $item)
 			{
-				$xml .= $item->Render(false);
+				$xml .= $item->Render(null);
 			}
 		}
 		$xml .= '</menu>';
@@ -92,3 +85,9 @@ class Menu extends DomainObject {
 	}
 	
 }
+
+Samara_Include('Link', 'inc');
+Samara_Include('Title', 'inc/data_types');
+Samara_Include('Collection', 'inc/data_types');
+Samara_Include('WeightedCollection', 'inc/data_types');
+Samara_Include('Reference', 'inc/data_types');

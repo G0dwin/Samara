@@ -1,7 +1,5 @@
 <?php
 
-Samara_Include('UserName', 'inc/data_types');
-Samara_Include('Password', 'inc/data_types');
 Samara_Include('DomainObject', 'inc');
 
 class User extends DomainObject
@@ -28,3 +26,6 @@ class User extends DomainObject
 	}
 	
 }
+
+Samara_Include('UserName', 'inc/data_types');
+Samara_Include('Password', 'inc/data_types');

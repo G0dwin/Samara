@@ -43,7 +43,7 @@ class IntegerTest extends Samara_TestCase
 	public function testConstructorWillTakeTwoArguments()
 	{
 		$i = $this->NewTestObject('Weight', 256);
-		/*$this->assertEquals('Weight', $i->Name);
+		$this->assertEquals('Weight', $i->Name);
 		$this->assertEquals('weight', $i->NativeName);
 		$this->assertEquals('`weight`', $i->FormatName());
 		$this->assertEquals('INT', $i->NativeType);
@@ -58,9 +58,9 @@ class IntegerTest extends Samara_TestCase
 		$this->assertNotContains('UNSIGNED', $i->Properties, 'Contained unsigned property');
 		$this->assertEquals(0, count($i->Properties));
 		$fullName = $i->GetFullTypeName();
-		$this->assertEquals('INT(4)', $fullName, "'$fullName' <> 'INT(4)'");*/
+		$this->assertEquals('INT(4)', $fullName, "'$fullName' <> 'INT(4)'");
 		
-		$createString = '`weight` INT(4) NOT NULL DEFAULT NULL';
+		$createString = '`weight` INT(4) NOT NULL DEFAULT 0';
 		$actual = $i->CompileForCreate(null);
 		$this->assertEquals($createString, $actual, "$actual <> $createString");
 	}

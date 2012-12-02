@@ -1,21 +1,21 @@
 <?php
 
 Samara_Include('DataObject', 'inc');
-Samara_Include('DomainObject', 'inc');
-Samara_Include('Reference', 'inc/data_types');
-Samara_Include('CollectionColumnReference', 'inc/queries');
 
 class Collection extends DataObject {
 	
 	protected $type;
 	protected $parent;
 	
-	public function __construct($type, DomainObject $parent, $name = null, $value = null)
+	public function __construct($type = null, DomainObject $parent = null, $name = null, $value = null)
 	{
 		parent::__construct($name ?: $type, $value);
-		Samara_Include($type, 'inc/domain');
-		$this->type = $type;
-		$this->parent = $parent;
+		if ($type)
+		{
+			Samara_Include($type, 'inc/domain');
+			$this->type = $type;
+			$this->parent = $parent;
+		}
 	}
 	
 	public function GetType()
@@ -246,3 +246,6 @@ class Collection extends DataObject {
 }
 
 Samara_Include('UpdateManager', 'inc');
+Samara_Include('DomainObject', 'inc');
+Samara_Include('Reference', 'inc/data_types');
+Samara_Include('CollectionColumnReference', 'inc/queries');
